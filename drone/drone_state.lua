@@ -1,15 +1,16 @@
 
 ---@class DroneState
----@field id number
----@field hubId number
+---@field id integer
+---@field hubId integer
 ---@field registered boolean
 ---@field position Vec
 ---@field currentTask EDroneTask|nil
+---@field lock boolean
 ---@field new fun(): DroneState
----@field getId fun(self: DroneState): number
----@field getHubId fun(self: DroneState): number
+---@field getId fun(self: DroneState): integer
+---@field getHubId fun(self: DroneState): integer
 ---@field isRegistered fun(self: DroneState): boolean
----@field register fun(self: DroneState, hubId: number)
+---@field register fun(self: DroneState, hubId: integer)
 ---@field unregister fun(self: DroneState)
 ---@field getPosition fun(self: DroneState): Vec
 ---@field updatePosition fun(self: DroneState)
@@ -24,45 +25,68 @@ DroneState.__index = DroneState
 
 ---@return DroneState
 function DroneState.new()
-    local self = setmetatable({id = turtle.getID(),
+    local self = setmetatable({id = os.getComputerID(),
                                hubId = -1,
                                registered = false,
                                position = GpsUtil.position(),
                                currentTask = EDroneTask.IDLE,
+                               lock = false
                               }, DroneState)
     self.currentTask = EDroneTask.IDLE
     return self
 end
 
 ---@param self DroneState
----@return number
+---@return integer
 function DroneState:getId()
     return self.id
 end
 
 ---@param self DroneState
----@return number
+---@return integer
 function DroneState:getHubId()
-    return self.hubId
+    while self.lock do
+        os.sleep(0.1)
+    end
+    self.lock = true
+    local hubId = self.hubId
+    self.lock = false
+    return hubId
 end
 
 ---@param self DroneState
 ---@return boolean
 function DroneState:isRegistered()
-    return self.registered
+    while self.lock do
+        os.sleep(0.1)
+    end
+    self.lock = true
+    local registered = self.registered
+    self.lock = false
+    return registered
 end
 
 ---@param self DroneState
----@param hubId number
+---@param hubId integer
 function DroneState:register(hubId)
+    while self.lock do
+        os.sleep(0.1)
+    end
+    self.lock = true
     self.registered = true
     self.hubId = hubId
+    self.lock = false
 end
 
 ---@param self DroneState
 function DroneState:unregister()
+    while self.lock do
+        os.sleep(0.1)
+    end
+    self.lock = true
     self.registered = false
     self.hubId = -1
+    self.lock = false
 end
 
 ---@param self DroneState

@@ -9,14 +9,16 @@ local presets = {
         "lib/vec.lua",
         "lib/gps_util.lua",
         "lib/drone_tasks_enum.lua",
-        "lib/concurrent_queue.lua"
+        "lib/concurrent/concurrent_queue.lua",
+        "lib/concurrent/concurrent_state.lua"
     },
     hub = {
         "hub/main.lua"
     },
     drone = {
         "drone/main.lua",
-        "drone/drone.lua"
+        "drone/drone.lua",
+        "drone/drone_state.lua"
     }
 }
 

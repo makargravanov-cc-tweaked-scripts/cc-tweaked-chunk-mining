@@ -1,6 +1,6 @@
 
 local Drone = {}
-local taskQueue = require("lib.concurrent_queue").new()
+local taskQueue = require("lib.concurrent.concurrent_queue").new()
 local droneState = require("drone_state").new()
 
 
