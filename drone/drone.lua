@@ -1,7 +1,9 @@
 
 local Drone = {}
 local taskQueue = require("lib.concurrent_queue").new()
-local droneState = require("drone_state")
+local droneState = require("drone_state").new()
+
+
 
 function Drone.listenCommands()
     while true do
@@ -14,7 +16,7 @@ function Drone.doTasks()
     while true do
         if not taskQueue:isEmpty() then
             local task = taskQueue:pull()
-            executeTask(task)
+            droneState:setTask(task.msg)
         end
         os.sleep(0.1)
     end
