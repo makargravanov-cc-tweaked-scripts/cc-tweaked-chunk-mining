@@ -4,17 +4,19 @@
 ---
 
 local base = "https://raw.githubusercontent.com/makargravanov-cc-tweaked-scripts/cc-tweaked-chunk-mining/main/"
-
 local presets = {
-    hub = {
-        "hub/main.lua",
+    common = {
         "lib/vec.lua",
-        "lib/net.lua"
+        "lib/gps_util.lua",
+        "lib/drone_tasks_enum.lua",
+        "lib/concurrent_queue.lua"
+    },
+    hub = {
+        "hub/main.lua"
     },
     drone = {
         "drone/main.lua",
-        "lib/vec.lua",
-        "lib/drone_utils.lua"
+        "drone/drone.lua"
     }
 }
 
@@ -31,7 +33,9 @@ local function mergePresets(a, b)
     return merged
 end
 
-presets.all = mergePresets(presets.hub, presets.drone)
+presets.hub = mergePresets(presets.common, presets.hub)
+presets.drone = mergePresets(presets.common, presets.drone)
+presets.all = mergePresets(mergePresets(presets.common, presets.hub), presets.drone)
 
 local function downloadFiles(list)
     for _, path in ipairs(list) do
@@ -41,14 +45,17 @@ local function downloadFiles(list)
             fs.makeDir(dir)
             print("Created dir: " .. dir)
         end
-
         local res = http.get(url)
         if res then
             local f = fs.open(path, "w")
-            f.write(res.readAll())
-            f.close()
-            res.close()
-            print("Loaded: " .. path)
+            if f then
+                f.write(res.readAll())
+                f.close()
+                res.close()
+                print("Loaded: " .. path)
+            else
+                print("Failed to open file: " .. path)
+            end
         else
             print("Loading error: " .. path)
         end
@@ -57,12 +64,10 @@ end
 
 local args = {...}
 local choice = args[1]
-
 if not choice then
     print("Use: install <hub|drone|all>")
     return
 end
-
 if presets[choice] then
     downloadFiles(presets[choice])
     print("Loading '" .. choice .. "' is completed.")
