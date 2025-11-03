@@ -5,8 +5,6 @@ local Vec = require("lib.vec")
 ---@class GpsUtil
 local GpsUtil = {}
 
-local gps = gps -- real API, will be mocked in tests
-
 ---@return Vec
 function GpsUtil.position()
     local x, y, z = gps.locate(3, false)

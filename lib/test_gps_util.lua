@@ -2,7 +2,7 @@
 -- Simple tests for Vec and GpsUtil. Uses assert() and a mocked gps API.
 
 local Vec = require("lib.vec")
-local GpsUtil = require("GpsUtil")
+local GpsUtil = require("lib.gps_util")
 
 -- Mock gps.locate for testing
 gps = {
