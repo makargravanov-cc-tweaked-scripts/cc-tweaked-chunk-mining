@@ -10,7 +10,8 @@ local presets = {
         "lib/gps_util.lua",
         "lib/drone_tasks_enum.lua",
         "lib/concurrent/concurrent_queue.lua",
-        "lib/concurrent/concurrent_state.lua"
+        "lib/concurrent/concurrent_state.lua",
+        "lib/net/router.lua"
     },
     hub = {
         "hub/main.lua"

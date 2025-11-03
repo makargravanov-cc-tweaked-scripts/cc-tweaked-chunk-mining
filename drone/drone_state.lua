@@ -16,6 +16,9 @@
 ---@field updatePosition fun(self: DroneState)
 ---@field getTask fun(self: DroneState): EDroneTask|nil
 ---@field setTask fun(self: DroneState, task: EDroneTask)
+---@field updateDirection fun(self: DroneState, direction: number)
+---@field getDirection fun(self: DroneState): number
+---@field direction number
 
 local DroneState = {}
 local GpsUtil = require("lib.gps_util")
@@ -30,7 +33,8 @@ function DroneState.new()
                                registered = false,
                                position = GpsUtil.position(),
                                currentTask = EDroneTask.IDLE,
-                               lock = false
+                               lock = false,
+                               direction = 0
                               }, DroneState)
     self.currentTask = EDroneTask.IDLE
     return self
@@ -108,6 +112,16 @@ end
 ---@param self DroneState
 function DroneState:setTask(task)
     self.currentTask = task
+end
+
+---@param self DroneState
+---@param direction number
+function DroneState:updateDirection(direction)
+    self.direction = direction
+end
+
+function DroneState:getDirection()
+    return self.direction
 end
 
 return DroneState

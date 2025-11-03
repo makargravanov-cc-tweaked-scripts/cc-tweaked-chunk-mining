@@ -1,5 +1,5 @@
 
-local Vec = require("vec")
+local Vec = require("lib.vec")
 
 ---@class GpsUtil
 local GpsUtil = {}
