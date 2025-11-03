@@ -11,15 +11,26 @@ local presets = {
         "lib/drone_tasks_enum.lua",
         "lib/concurrent/concurrent_queue.lua",
         "lib/concurrent/concurrent_state.lua",
-        "lib/net/router.lua"
+        "lib/net/router.lua",
+        "lib/net/msg.lua",
     },
     hub = {
-        "hub/main.lua"
+        "hub/main.lua",
+        "hub/hub_state.lua",
+        "hub/hub_net.lua",
+        "hub/entities/chunk_entity.lua",
+        "hub/entities/chunk_work_range.lua",
+        "hub/entities/drone_entity.lua",
     },
     drone = {
         "drone/main.lua",
         "drone/drone.lua",
-        "drone/drone_state.lua"
+        "drone/drone_state.lua",
+        "drone/drone_net.lua",
+        "drone/services/move_service.lua",
+        "drone/services/mining_service.lua",
+        "drone/services/fuel_service.lua",
+        "drone/services/inventory_service.lua"
     }
 }
 

@@ -74,4 +74,18 @@ function GpsUtil.localChunkToGlobal(localChunk, originChunk)
     return Vec.localChunkToGlobal(localChunk, originChunk)
 end
 
+-- Returns local coordinates in chunk for given block index (1-based)
+---@param n integer
+---@return Vec -- local (x,0,z)
+function GpsUtil.localCoordsInChunkByIndex(n)
+    return Vec.blockIndexToLocal(n)
+end
+
+-- Returns global coordinates in chunk for given block index (1-based)
+---@param n integer
+---@return Vec -- global (x,0,z)
+function GpsUtil.globalCoordsByIndexInChunk(n)
+    return Vec.nthBlockInChunkGlobal(GpsUtil.currentChunk(), n, true)
+end
+
 return GpsUtil

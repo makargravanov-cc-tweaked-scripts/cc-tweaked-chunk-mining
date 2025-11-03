@@ -19,10 +19,13 @@ function MiningService.new(droneState, moveService)
 end
 
 --- @param self MiningService
+--- @param startNumber integer
 --- @param length integer
 --- @param fromY integer
 --- @param toY integer
-function MiningService:startMining(length, fromY, toY)
+function MiningService:startMining(startNumber, length, fromY, toY)
+    self.droneState:updatePosition()
+    local currentPos = self.droneState:getPosition()
 
 end
 

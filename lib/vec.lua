@@ -126,4 +126,17 @@ function Vec.localChunkToGlobal(localChunk, originChunk)
     return Vec.new(localChunk.x + originChunk.x, 0, localChunk.z + originChunk.z)
 end
 
+--- Returns local coordinates of a block in a chunk by its index (1-based)
+---@param n integer  -- block index in range 1..256
+---@return Vec       -- local coordinates (x,z)
+function Vec.blockIndexToLocal(n)
+    if n < 1 or n > 256 then
+        error("Block index out of range: " .. tostring(n))
+    end
+    local i = n - 1
+    local x = i % 16
+    local z = math.floor(i / 16)
+    return Vec.new(x, 0, z)
+end
+
 return Vec
