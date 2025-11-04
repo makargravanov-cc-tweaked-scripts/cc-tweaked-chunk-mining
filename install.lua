@@ -3,7 +3,7 @@
 --- DateTime: 31.10.2025 11:56
 ---
 
-local base = "https://raw.githubusercontent.com/makargravanov-cc-tweaked-scripts/cc-tweaked-chunk-mining/main/"
+local base = "https://raw.githubusercontent.com/makargravanov-cc-tweaked-scripts/cc-tweaked-chunk-mining/refs/heads/master/"
 local presets = {
     common = {
         "lib/vec.lua",
