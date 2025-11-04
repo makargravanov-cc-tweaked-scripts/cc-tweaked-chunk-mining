@@ -79,6 +79,7 @@ local function downloadFiles(list)
             end
         else
             print("Loading error: " .. path)
+            print("url: " .. url)
         end
     end
 end
