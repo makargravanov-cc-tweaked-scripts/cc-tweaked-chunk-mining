@@ -1,3 +1,4 @@
-local Main = require("drone/main")  
+
+local Main = require("drone.main")
 
 Main.run()

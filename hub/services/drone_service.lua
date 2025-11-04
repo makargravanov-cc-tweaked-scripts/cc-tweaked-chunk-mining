@@ -30,13 +30,16 @@ function DroneService:searchForDrones()
         position = self.hubState.position,
         distance = 32
     })
+    print("search for drones...")
     HubNetwork.sendNoTarget(discoveryMsg)
+    print("sended")
 end
 
 --- comment
 --- @param self DroneService
 --- @param msg Message
 function DroneService:registerDrone(msg)
+    print("registerDrone()")
     ---@type integer
     local droneId = msg.payload.droneId
     ---@type boolean

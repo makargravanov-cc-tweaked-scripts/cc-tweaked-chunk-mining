@@ -25,6 +25,7 @@ end
 --- @param msg Message
 --- @return Message
 function RegistryService:discovery(msg)
+
     --- @type Vec
     local hubPos = msg.payload.position
     --- @type integer

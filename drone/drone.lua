@@ -1,9 +1,9 @@
 
 local Drone = {}
 local taskQueue = require("lib.concurrent.concurrent_queue").new()
-local droneState = require("drone_state").new()
-local registryService = require("services.registry_service").new(droneState)
-local droneNet = require("drone_net").new(droneState, registryService)
+local droneState = require("drone.drone_state").new()
+local registryService = require("drone.services.registry_service").new(droneState)
+local droneNet = require("drone.drone_net").new(droneState, registryService)
 droneNet:init()
 
 local moveService = require("drone.services.move_service").new(droneState)
@@ -14,6 +14,7 @@ local miningService = require("drone.services.mining_service").new(droneState, m
 function Drone.listenCommands()
     while true do
         local senderID, msg = rednet.receive("mining_drone_protocol")
+        print("senderId = " .. senderID)
 ---@diagnostic disable-next-line: param-type-mismatch
         droneNet:dispatch(senderID, msg)
         os.sleep(0.1)
