@@ -33,7 +33,9 @@ function Hub:listenCommands()
     end
 end
 
+--- @param self Hub
 function Hub:initialize()
+    os.sleep(3)
     self.droneService:searchForDrones()
 end
 
