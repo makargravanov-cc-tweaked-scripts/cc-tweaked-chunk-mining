@@ -32,4 +32,14 @@ function Router:dispatch(path, message)
     end
 end
 
+--- @param targetId integer
+--- @param msg Message
+function Router.send(targetId, msg)
+    rednet.send(targetId, msg, "mining_drone_protocol")
+end
+
+function Router.sendNoTarget(msg)
+    rednet.broadcast(msg, "mining_drone_protocol")
+end
+
 return Router

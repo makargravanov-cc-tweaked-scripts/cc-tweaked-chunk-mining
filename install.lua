@@ -15,14 +15,20 @@ local presets = {
         "lib/net/msg.lua",
     },
     hub = {
+        "hub_run.lua",
+        "hub/hub.lua",
         "hub/main.lua",
         "hub/hub_state.lua",
         "hub/hub_net.lua",
         "hub/entities/chunk_entity.lua",
         "hub/entities/chunk_work_range.lua",
         "hub/entities/drone_entity.lua",
+        "hub/entities/inventory/cargo_pod.lua",
+        "hub/entities/inventory/fuel_pod.lua",
+        "hub/services/drone_service.lua",
     },
     drone = {
+        "drone_run.lua",
         "drone/main.lua",
         "drone/drone.lua",
         "drone/drone_state.lua",
@@ -30,7 +36,8 @@ local presets = {
         "drone/services/move_service.lua",
         "drone/services/mining_service.lua",
         "drone/services/fuel_service.lua",
-        "drone/services/inventory_service.lua"
+        "drone/services/inventory_service.lua",
+        "drone/services/registry_service.lua",
     }
 }
 

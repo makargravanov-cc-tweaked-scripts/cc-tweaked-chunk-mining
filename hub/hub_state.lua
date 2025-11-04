@@ -1,30 +1,29 @@
 
 ---@class HubState
----@field public chunkWorkMap table<string, ChunkWorkRange[]>  -- chunkId → list of ranges
----@field public droneAssignment table<integer, {chunkId:string, rangeIndex:integer}>  -- droneId → assigned range
----@field public drones DroneEntity[]
----@field public new fun(): HubState
----@field public registerChunk fun(self: HubState, chunkId: string, ranges: ChunkWorkRange[])
----@field public assignDrone fun(self: HubState, droneId: integer, chunkId: string, rangeIndex: integer)
----@field public unassignDrone fun(self: HubState, droneId: integer)
----@field public getAssignedRange fun(self: HubState, droneId: integer): ChunkWorkRange|nil
----@field public getChunkProgress fun(self: HubState, chunkId: string): number
----@
----@field public registerDrone fun(self: HubState, droneId: integer)
----@field public unregisterDrone fun(self: HubState, droneId: integer)
----@field public containsDrone fun(self: HubState, droneId: integer): boolean
----@
----@field public rootChunk ChunkEntity|nil
----@field public position Vec|nil
----@field public fuelPods FuelPod[]
----@field public cargoPods CargoPod[]
----@
+---@field chunkWorkMap table<string, ChunkWorkRange[]>  -- chunkId → list of ranges
+---@field droneAssignment table<integer, {chunkId:string, rangeIndex:integer}>  -- droneId → assigned range
+---@field drones DroneEntity[]
+---@field new fun(): HubState
+---@field registerChunk fun(self: HubState, chunkId: string, ranges: ChunkWorkRange[])
+---@field assignDrone fun(self: HubState, droneId: integer, chunkId: string, rangeIndex: integer)
+---@field unassignDrone fun(self: HubState, droneId: integer)
+---@field getAssignedRange fun(self: HubState, droneId: integer): ChunkWorkRange|nil
+---@field getChunkProgress fun(self: HubState, chunkId: string): number
+---@field registerDrone fun(self: HubState, droneId: integer)
+---@field unregisterDrone fun(self: HubState, droneId: integer)
+---@field containsDrone fun(self: HubState, droneId: integer): boolean
+---@field rootChunk ChunkEntity|nil
+---@field position Vec|nil
+---@field fuelPods FuelPod[]
+---@field cargoPods CargoPod[]
+---@field id integer
 
 local gpsUtil = require("lib.gps_util")
 
 local HubState = {}
 HubState.__index = HubState
 
+--- @constructor
 --- @return HubState
 function HubState.new()
     local self = setmetatable({}, HubState)
@@ -35,6 +34,7 @@ function HubState.new()
     self.rootChunk = nil
     self.fuelPods = {}
     self.cargoPods = {}
+    self.id = os.getComputerID()
     return self
 end
 
