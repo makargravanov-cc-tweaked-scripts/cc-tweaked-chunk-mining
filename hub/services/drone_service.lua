@@ -24,7 +24,7 @@ end
 
 --- @param self DroneService
 function DroneService:searchForDrones()
-    local discoveryMsg = msg.new("/drone/discover",
+    local discoveryMsg = msg.new("/drone/discovery",
     "/hub/responses/drone/discovery",
     self.hubState.id, {
         position = self.hubState.position,
