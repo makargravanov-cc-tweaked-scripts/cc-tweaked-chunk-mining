@@ -41,7 +41,7 @@ end
 --- @param senderID integer|number|nil
 --- @param msg Message|nil
 function DroneNet:dispatch(senderID, msg)
-    if senderID ~= self.droneState:getHubId() then
+    if senderID ~= self.droneState:getHubId() and self.droneState:getHubId() ~= -1 then
         return
     end
     if msg == nil then
