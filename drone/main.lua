@@ -3,8 +3,11 @@
 local Main = {}
 
 function Main.run()
-    local Drone = require("drone.drone")
-    Drone.listenCommands()
+    local drone = require("drone.drone").new()
+    parallel.waitForAll(
+        function() drone:listenCommands() end,
+        function() drone:processQueue() end
+    )
 end
 
 return Main

@@ -1,6 +1,17 @@
+--- @class Drone
+--- @field droneState DroneState
+--- @field moveService MoveService
+--- @field registryService RegistryService
+--- @field droneNet DroneNet
+--- @field miningService MiningService
+--- @field msgQueue ConcurrentQueue
+--- @field new fun(): Drone
+--- @field listenCommands fun(self: Drone)
 
 local Drone = {}
-local taskQueue = require("lib.concurrent.concurrent_queue").new()
+Drone.__index = Drone
+local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
+
 local droneState = require("drone.drone_state").new()
 local moveService = require("drone.services.move_service").new(droneState)
 local registryService = require("drone.services.registry_service").new(droneState, moveService)
@@ -10,26 +21,45 @@ droneNet:init()
 
 local miningService = require("drone.services.mining_service").new(droneState, moveService)
 
+function Drone.new()
+    local self = setmetatable({}, Drone)
+    self.droneState = droneState
+    self.moveService = moveService
+    self.registryService = registryService
+    self.droneNet = droneNet
+    self.miningService = miningService
+    self.msgQueue = ConcurrentQueue.new()
+    return self
+end
 
 
-function Drone.listenCommands()
+--- @param self Drone
+function Drone:listenCommands()
     while true do
-        local senderID, msg = rednet.receive("mining_drone_protocol")
-        print("senderId = " .. senderID)
----@diagnostic disable-next-line: param-type-mismatch
-        droneNet:dispatch(senderID, msg)
-        os.sleep(0.1)
+        local event, senderID, msg, protocol = os.pullEvent("rednet_message")
+        if protocol == "mining_drone_protocol" then
+            self.msgQueue:push({ sender = senderID, msg = msg })
+        end
     end
 end
 
--- function Drone.doTasks()
---     while true do
---         if not taskQueue:isEmpty() then
---             local task = taskQueue:pull()
---             droneState:setTask(task.msg)
---         end
---         os.sleep(0.1)
---     end
--- end
+--- @param self Drone
+function Drone:processQueue()
+    while true do
+        if not self.msgQueue:isEmpty() then
+            local item = self.msgQueue:pull()
+            if item then
+                local ok, err = pcall(function()
+                    self.droneNet:dispatch(item.sender, item.msg)
+                end)
+                if not ok then
+                    print("Error in dispatch:", tostring(err))
+                end
+            end
+        else
+            os.sleep(0.1)
+        end
+    end
+end
 
 return Drone
