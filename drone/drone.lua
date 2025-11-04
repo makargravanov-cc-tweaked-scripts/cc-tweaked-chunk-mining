@@ -2,11 +2,12 @@
 local Drone = {}
 local taskQueue = require("lib.concurrent.concurrent_queue").new()
 local droneState = require("drone.drone_state").new()
-local registryService = require("drone.services.registry_service").new(droneState)
+local moveService = require("drone.services.move_service").new(droneState)
+local registryService = require("drone.services.registry_service").new(droneState, moveService)
 local droneNet = require("drone.drone_net").new(droneState, registryService)
 droneNet:init()
 
-local moveService = require("drone.services.move_service").new(droneState)
+
 local miningService = require("drone.services.mining_service").new(droneState, moveService)
 
 

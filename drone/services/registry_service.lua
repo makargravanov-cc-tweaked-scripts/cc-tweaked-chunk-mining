@@ -1,6 +1,7 @@
 
 --- @class RegistryService
 --- @field droneState DroneState
+--- @field moveService MoveService
 --- @field new fun(droneState: DroneState): RegistryService
 --- @field discovery fun(self: RegistryService, msg: Message): Message
 --- @field register fun(self: RegistryService, msg: Message)
@@ -12,12 +13,13 @@ local RegistryService = {}
 RegistryService.__index = RegistryService
 
 --- @param droneState DroneState
+--- @param moveService MoveService
 --- @return RegistryService
 --- @constructor
-function RegistryService.new(droneState)
+function RegistryService.new(droneState, moveService)
     local self = setmetatable({}, RegistryService)
     self.droneState = droneState
-    
+    self.moveService = moveService
     return self
 end
 
@@ -45,6 +47,7 @@ function RegistryService:register(msg)
     ---@type integer
     local hubId = msg.payload.hubId
     self.droneState:register(hubId)
+    self.moveService:calibrateDirection()
     print("Registered drone with hub ID: "..hubId)
 end
 
