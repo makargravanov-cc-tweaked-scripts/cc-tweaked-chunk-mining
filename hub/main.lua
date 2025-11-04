@@ -7,7 +7,10 @@ function Main.run()
     local hub = require("hub.hub").new(hubState, droneService)
     
     parallel.waitForAll(
-        function() hub:initialize() end,
+        function() 
+            os.sleep(1)
+            hub:initialize()
+        end,
         function() hub:listenCommands() end,
         function() hub:processQueue() end
     )

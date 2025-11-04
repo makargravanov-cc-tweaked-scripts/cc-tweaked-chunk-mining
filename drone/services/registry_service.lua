@@ -44,6 +44,7 @@ end
 --- @param self RegistryService
 --- @param msg Message
 function RegistryService:register(msg)
+    print("RegistryService:register()")
     ---@type integer
     local hubId = msg.payload.hubId
     self.droneState:register(hubId)
