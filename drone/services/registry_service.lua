@@ -52,4 +52,4 @@ function RegistryService:register(msg)
     print("Registered drone with hub ID: "..hubId)
 end
 
-return RegistryService
+return RegistryService  

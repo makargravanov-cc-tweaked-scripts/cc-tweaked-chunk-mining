@@ -42,11 +42,14 @@ end
 --- @param msg Message|nil
 function DroneNet:dispatch(senderID, msg)
     if senderID ~= self.droneState:getHubId() and self.droneState:getHubId() ~= -1 then
+        print("drone net dispatch: senderID ~= self.droneState:getHubId() and self.droneState:getHubId() ~= -1")
         return
     end
     if msg == nil then
+        print("drone net dispatch: msg == nil")
         return
     end
+    print("drone net dispatch: router:dispatch(msg.path, msg)")
     router:dispatch(msg.path, msg)
 end
 
