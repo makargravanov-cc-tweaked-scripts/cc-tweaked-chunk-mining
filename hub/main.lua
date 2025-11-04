@@ -6,14 +6,10 @@ function Main.run()
     local droneService = require("hub/services/drone_service").new(hubState)
     local hub = require("hub.hub").new(hubState, droneService)
     
-    -- Run initialize in a separate thread, main thread handles listening
     parallel.waitForAll(
-        function()
-            hub:initialize()
-        end,
-        function()
-            hub:listenCommands()
-        end
+        function() hub:initialize() end,
+        function() hub:listenCommands() end,
+        function() hub:processQueue() end
     )
 end
 
