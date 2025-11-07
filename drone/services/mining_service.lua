@@ -3,6 +3,10 @@
 --- @field droneState DroneState
 --- @field moveService MoveService
 --- @field new fun(droneState: DroneState, moveService: MoveService): MiningService
+--- @field startMining fun(self: MiningService, startNumber: integer, targetNumber: integer, fromY: integer, toY: integer)
+--- @field mineColumn fun(self: MiningService, upperY: integer, lowerY: integer)
+
+local GpsUtil = require("lib.gps_util")
 
 local MiningService = {}
 MiningService.__index = MiningService
@@ -20,13 +24,84 @@ end
 
 --- @param self MiningService
 --- @param startNumber integer
---- @param length integer
+--- @param targetNumber integer
 --- @param fromY integer
 --- @param toY integer
-function MiningService:startMining(startNumber, length, fromY, toY)
+function MiningService:startMining(startNumber, targetNumber, fromY, toY)
+    -- normalize indices
+    local a = math.floor(startNumber)
+    local b = math.floor(targetNumber)
+    if a < 1 or b < 1 or a > 256 or b > 256 then
+        error("Index out of range. Valid range: 1..256")
+    end
+    local fromIndex = math.min(a, b)
+    local toIndex = math.max(a, b)
+
+    -- normalize Y: upper >= lower
+    local upperY = math.max(fromY, toY)
+    local lowerY = math.min(fromY, toY)
+
+    -- remember the original chunk (we work only inside it)
     self.droneState:updatePosition()
     local currentPos = self.droneState:getPosition()
+    local chunk = GpsUtil.chunkOf(currentPos)
 
+    for idx = fromIndex, toIndex do
+        local colGlobal = GpsUtil.nthBlockGlobal(chunk, idx, true)
+        if not colGlobal then
+            error("Failed to compute global coords for index " .. tostring(idx))
+        end
+        if not self.moveService:moveVertical(upperY) then
+            error("Failed to move to upper Y (" .. tostring(upperY) .. ") before column " .. tostring(idx))
+        end
+        if not self.moveService:moveHorizontal(colGlobal.x, colGlobal.z) then
+            error("Failed to move to column X=" .. tostring(colGlobal.x) .. " Z=" .. tostring(colGlobal.z) .. " (index " .. tostring(idx) .. ")")
+        end
+        self:mineColumn(upperY, lowerY)
+        self.droneState:updatePosition()
+    end
 end
+
+--- @param self MiningService
+--- @param upperY integer 
+--- @param lowerY integer 
+function MiningService:mineColumn(upperY, lowerY)
+    self.droneState:updatePosition()
+    local pos = self.droneState:getPosition()
+
+    for y = pos.y - 1, lowerY, -1 do
+        local hasBlock, data = turtle.inspectDown()
+
+        if hasBlock then
+            if turtle.digDown() then
+                if not turtle.down() then break end
+            else
+                print("Unbreakable block on Y=" .. y)
+                break
+            end
+        else
+            if not turtle.down() then
+                print("Failed to descend to Y=" .. y)
+                break
+            end
+        end
+    end
+
+    self.droneState:updatePosition()
+
+    local currentPos = self.droneState:getPosition()
+    if currentPos.y < upperY then
+        local diff = upperY - currentPos.y
+        for _ = 1, diff do
+            if not turtle.up() then
+                print("Error ascending to Y=" .. upperY)
+                break
+            end
+        end
+    end
+
+    self.droneState:updatePosition()
+end
+
 
 return MiningService

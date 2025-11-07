@@ -12,7 +12,8 @@ function Main.run()
             hub:initialize()
         end,
         function() hub:listenCommands() end,
-        function() hub:processQueue() end
+        function() hub:processQueue() end,
+        function() hub:consoleLoop() end
     )
 end
 

@@ -8,6 +8,7 @@
 --- @field listenCommands fun(self: Hub)
 --- @field new fun(hubState: HubState, droneService: DroneService): Hub
 --- @field processQueue fun(self: Hub)
+--- @field consoleLoop fun(self: Hub)
 
 local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
 
@@ -61,5 +62,39 @@ end
 function Hub:initialize()
     self.droneService:searchForDrones()
 end
+
+local function splitWords(s)
+    local t={}
+    for w in s:gmatch("%S+") do table.insert(t,w) end
+    return t
+end
+
+function Hub:consoleLoop()
+    print("Hub console started. Type 'status' for current info or 'quit' to exit.")
+    while true do
+        io.write("hub> ")
+        local line = read()
+        if not line then break end
+        local cmd = line:lower()
+
+        if cmd == "status" then
+            print("Hub ID:", tostring(self.hubState.id))
+            local pos = self.hubState.position
+            print("Position:", pos.x .. "," .. pos.y .. "," .. pos.z)
+            print("Registered drones:", #self.hubState.drones)
+            local chunkCount = 0
+            for _ in pairs(self.hubState.chunkWorkMap) do chunkCount = chunkCount + 1 end
+            print("Chunks tracked:", chunkCount)
+
+        elseif cmd == "quit" or cmd == "exit" then
+            print("Console exiting.")
+            break
+
+        elseif cmd ~= "" then
+            print("Unknown command.")
+        end
+    end
+end
+
 
 return Hub
