@@ -64,55 +64,11 @@ function Hub:initialize()
     
 end
 
-local function splitWords(s)
-    local t={}
-    for w in s:gmatch("%S+") do table.insert(t,w) end
-    return t
-end
-
+--- @param self Hub
 function Hub:consoleLoop()
-    print("Hub console started. Type 'help' for available commands or 'quit' to exit.")
-    while true do
-        io.write("hub> ")
-        local line = read()
-        if not line then break end
-        local cmd = line:lower()
-
-        if cmd == "help" then
-            print("Available commands:")
-            print("  help          - Show this help message")
-            print("  status        - Show hub status and statistics")
-            print("  list-drones   - List all registered drone IDs")
-            print("  quit/exit     - Exit the console")
-
-        elseif cmd == "status" then
-            print("Hub ID:", tostring(self.hubState.id))
-            local pos = self.hubState.position
-            print("Position:", pos.x .. "," .. pos.y .. "," .. pos.z)
-            print("Registered drones:", #self.hubState.drones)
-            local chunkCount = 0
-            for _ in pairs(self.hubState.chunkWorkMap) do chunkCount = chunkCount + 1 end
-            print("Chunks tracked:", chunkCount)
-
-        elseif cmd == "list-drones" then
-            if #self.hubState.drones == 0 then
-                print("No drones registered.")
-            else
-                local droneList = {}
-                for _, id in ipairs(self.hubState.drones) do
-                    table.insert(droneList, tostring(id))
-                end
-                print("Registered drone IDs: " .. table.concat(droneList, ", "))
-            end
-
-        elseif cmd == "quit" or cmd == "exit" then
-            print("Console exiting.")
-            break
-
-        elseif cmd ~= "" then
-            print("Unknown command. Type 'help' for available commands.")
-        end
-    end
+    local Console = require("hub/console")
+    local console = Console.new(self.hubState)
+    console:run()
 end
 
 
