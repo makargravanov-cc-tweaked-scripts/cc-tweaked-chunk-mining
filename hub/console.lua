@@ -113,7 +113,7 @@ function Console:handleChunkClick(mouseX, mouseY)
     
     -- The grid is 2*offset+1 chunks wide (5x5), each chunk takes 2 characters (██)
     -- So each chunk is 2 characters wide
-    local chunkDx = math.floor(clickedDx / 2) - offset
+    local chunkDx = math.floor(clickedDx) - offset
     local chunkDz = offset - math.floor(clickedDz)  -- Flip the Z axis
     
     -- Check if click is within grid bounds
@@ -244,7 +244,7 @@ function Console:displayChunkGrid()
             -- Print colored square
             term.setTextColor(color)
             term.setBackgroundColor(color)
-            io.write("██")
+            io.write("█")
             term.setTextColor(colors.white)
             term.setBackgroundColor(colors.black)
         end
