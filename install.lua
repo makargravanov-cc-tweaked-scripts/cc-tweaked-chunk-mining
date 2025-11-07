@@ -20,6 +20,7 @@ local presets = {
         "hub/main.lua",
         "hub/hub_state.lua",
         "hub/hub_net.lua",
+        "hub/console.lua",
         "hub/entities/chunk_entity.lua",
         "hub/entities/chunk_work_range.lua",
         "hub/entities/drone_entity.lua",

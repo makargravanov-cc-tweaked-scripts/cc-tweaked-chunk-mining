@@ -67,7 +67,7 @@ end
 --- @param self Hub
 function Hub:consoleLoop()
     local Console = require("hub/console")
-    local console = Console.new(self.hubState)
+    local console = Console.new(self.hubState, self.droneService)
     console:run()
 end
 

@@ -17,8 +17,14 @@
 ---@field fuelPods FuelPod[]
 ---@field cargoPods CargoPod[]
 ---@field id integer
+---@field registerChunksGrid fun(self: HubState, gridSize: integer?)
+---@field getChunkId fun(self: HubState, chunkVec: Vec): string
+---@field hasAssignedDrone fun(self: HubState, chunkId: string): boolean
+---@field getCenterChunk fun(self: HubState): Vec|nil
 
 local gpsUtil = require("lib.gps_util")
+local ChunkWorkRange = require("hub/entities/chunk_work_range")
+local ChunkEntity = require("hub/entities/chunk_entity")
 
 local HubState = {}
 HubState.__index = HubState
@@ -119,6 +125,73 @@ function HubState:getChunkProgress(chunkId)
         done = done + r.nowProcessed
     end
     return done / total
+end
+
+--- Converts chunk coordinates to chunk ID string
+---@param chunkVec Vec
+---@return string
+function HubState:getChunkId(chunkVec)
+    return tostring(chunkVec.x) .. "," .. tostring(chunkVec.z)
+end
+
+--- Gets the center chunk (hub's current chunk)
+---@return Vec|nil
+function HubState:getCenterChunk()
+    if not self.position then return nil end
+    return gpsUtil.chunkOf(self.position)
+end
+
+--- Checks if a chunk has any assigned drone
+---@param chunkId string
+---@return boolean
+function HubState:hasAssignedDrone(chunkId)
+    local ranges = self.chunkWorkMap[chunkId]
+    if not ranges then return false end
+    for _, range in ipairs(ranges) do
+        if range.assignedDroneId then
+            return true
+        end
+    end
+    return false
+end
+
+--- Registers a grid of chunks around the hub's center chunk
+---@param gridSize integer? Default: 5
+function HubState:registerChunksGrid(gridSize)
+    gridSize = gridSize or 5
+    local centerChunk = self:getCenterChunk()
+    if not centerChunk then
+        print("Error: Hub position not set. Cannot register chunks.")
+        return
+    end
+    
+    -- Set root chunk if not set
+    if not self.rootChunk then
+        local relativeChunk = gpsUtil.chunkOfRelativeTo(self.position, self.position)
+        self.rootChunk = ChunkEntity.new(centerChunk, relativeChunk)
+    end
+    
+    local offset = math.floor(gridSize / 2)
+    local registeredCount = 0
+    
+    for dz = -offset, offset do
+        for dx = -offset, offset do
+            -- Calculate chunk coordinates relative to center
+            local chunkVec = {x = centerChunk.x + dx, y = 0, z = centerChunk.z + dz}
+            local chunkId = self:getChunkId(chunkVec)
+            
+            -- Only register if not already registered
+            if not self.chunkWorkMap[chunkId] then
+                -- Create a single work range covering the entire chunk (1-256 blocks)
+                local ranges = {ChunkWorkRange.new(1, 256, nil)}
+                self:registerChunk(chunkId, ranges)
+                registeredCount = registeredCount + 1
+            end
+        end
+    end
+    
+    print("Registered " .. registeredCount .. " new chunks in " .. gridSize .. "x" .. gridSize .. " grid.")
+    print("Center chunk: " .. self:getChunkId(centerChunk))
 end
 
 return HubState
