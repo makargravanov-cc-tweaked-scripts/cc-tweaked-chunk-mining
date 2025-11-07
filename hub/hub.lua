@@ -98,8 +98,11 @@ function Hub:consoleLoop()
             if #self.hubState.drones == 0 then
                 print("No drones registered.")
             else
-                print("Registered drone IDs:")
-                print(textutils.serialize(self.hubState.drones))
+                local droneList = {}
+                for _, id in ipairs(self.hubState.drones) do
+                    table.insert(droneList, tostring(id))
+                end
+                print("Registered drone IDs: " .. table.concat(droneList, ", "))
             end
 
         elseif cmd == "quit" or cmd == "exit" then
