@@ -162,6 +162,9 @@ function Console:displayChunkGrid()
         print("Error: Hub position not set. Cannot display chunks.")
         return
     end
+    self.monitor.clear()
+
+    self.width, self.heigh = self.monitor.getSize()
 
     local gridSize = 5
     
