@@ -109,7 +109,7 @@ end
 if choice == "u" or choice == "uninstall" then
     uninstallFiles(presets.all, selfScriptPath)
     print("Uninstall completed. Only this script remains.")
-elseif presets[choice] th
+elseif presets[choice] then
     downloadFiles(presets[choice])
     print("Loading '" .. choice .. "' is completed.")
 else
