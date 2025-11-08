@@ -9,7 +9,7 @@
 --- @field subscribeDrone fun(self: FuelPod, droneId: integer) : boolean
 --- @field unsubscribeDrone fun(self: FuelPod, droneId: integer)
 
-local FuelPod
+local FuelPod = {}
 FuelPod.__index = FuelPod
 
 --- @param position Vec
