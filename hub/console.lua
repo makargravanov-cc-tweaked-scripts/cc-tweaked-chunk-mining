@@ -22,8 +22,15 @@
 --- @field displayChunkGrid fun(self: Console): boolean
 --- @field handleAssignDrones fun(self: Console, n: integer)
 --- @field handleResetAssignments fun(self: Console)
+--- @field parseXYZ fun(input: string): integer|nil, integer|nil, integer|nil, string|nil
+--- @
+--- @field handleFuel fun(self: Console)
+--- @field handleCargo fun(self: Console)
 
-local ChunkWorkRange = require("hub/entities/chunk_work_range")
+local FuelPod = require("hub.entities.inventory.fuel_pod")
+local CargoPod = require("hub.entities.inventory.cargo_pod")
+local ChunkWorkRange = require("hub.entities.chunk_work_range")
+local Vec            = require("lib.vec")
 local Console = {}
 Console.__index = Console
 
@@ -218,14 +225,14 @@ function Console:displayChunkGrid()
 
             -- Select color for chunk
             local color
-            if self.pendingChunkIds[chunkId] then
-                color = colors.yellow   -- Selected for assignment (yellow)
+            if self.hubState:hasAssignedDrone(chunkId) then
+                color = colors.green    -- Has assigned drone
+            elseif self.pendingChunkIds[chunkId]  then
+                color = colors.yellow   -- Selected for assignment
             elseif not self.hubState.chunkWorkMap[chunkId] then
                 color = colors.black    -- Not registered
             elseif dx == 0 and dz == 0 then
                 color = colors.blue     -- Center chunk
-            elseif self.hubState:hasAssignedDrone(chunkId) then
-                color = colors.green    -- Has assigned drone
             else
                 color = colors.red      -- Registered, no drone
             end
@@ -257,7 +264,7 @@ function Console:handleShowChunks()
          -- Display the chunk grid initially
         self.monitor.setTextScale(self.scale)
         self:displayChunkGrid()
-    -- Enter an interactive loop to handle mouse clicks and keyboard input
+        -- Enter an interactive loop to handle mouse clicks and keyboard input
         while true do
             local event, p1, p2, p3 = os.pullEvent()
             if event == "monitor_touch" then
@@ -379,6 +386,39 @@ function Console:handleResetAssignments()
     print("All assignments and chunk work ranges reset to defaults.")
 end
 
+--- 
+--- @param self Console
+function Console:handleFuel()
+    for _, pod in ipairs(self.hubState.fuelPods) do
+        print("x: " .. pod.position.x .. ", y: " .. pod.position.y .. ", z: " .. pod.position.z)
+    end
+    while true do
+        local line = read()
+        if not line then break end
+        ---@type string
+        local cmd = line:lower()
+        Console.parseXYZ(cmd)
+        local x, y, z = Console.parseXYZ(cmd)
+        self.hubState:addFuelPod(FuelPod.new(Vec.new(x, y, z)))
+    end
+end
+
+--- @param self Console
+function Console:handleCargo()
+    for _, pod in ipairs(self.hubState.cargoPods) do
+        print("x: " .. pod.position.x .. ", y: " .. pod.position.y .. ", z: " .. pod.position.z)
+    end
+    while true do
+        local line = read()
+        if not line then break end
+        ---@type string
+        local cmd = line:lower()
+        Console.parseXYZ(cmd)
+        local x, y, z = Console.parseXYZ(cmd)
+        self.hubState:addCargoPod(CargoPod.new(Vec.new(x, y, z)))
+    end
+end
+
 --- Main console loop
 --- @param self Console
 function Console:run()
@@ -399,8 +439,12 @@ function Console:run()
             self:handleSearchDrones()
         elseif cmd == "register-chunks" or cmd == "-rc" then
             self:handleRegisterChunks()
-        elseif cmd == "show-chunks" or cmd == "-sc"then
+        elseif cmd == "show-chunks" or cmd == "-sc" then
             self:handleShowChunks()
+        elseif cmd == "fuel" then
+            self:handleFuel()
+        elseif cmd == "cargo" then
+            self:handleCargo()
         elseif cmd:find("^assign%-drones%s") or cmd == "-ad" then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n or n < 1 then
@@ -418,6 +462,61 @@ function Console:run()
             self:handleUnknownCommand(cmd)
         end
     end
+end
+
+
+--- @param input string
+--- @return integer|nil x
+--- @return integer|nil y
+--- @return integer|nil z
+--- @return string|nil
+function Console.parseXYZ(input)
+    if type(input) ~= "string" then
+        return nil, nil, nil, "input must be a string"
+    end
+
+    --- @param s string
+    --- @return integer|nil
+    local function toint(s)
+        if s and s:match("^[-+]?%d+$") then
+            return tonumber(s)
+        end
+        return nil
+    end
+
+    --- @type table<string, integer|nil>
+    local out = { x = nil, y = nil, z = nil }
+
+    for k, v in input:gmatch("([xXyYzZ])%s*[:=]%s*([-+]?%d+)") do
+        local key = k:lower()
+        out[key] = toint(v)
+    end
+
+    if not (out.x and out.y and out.z) then
+        local residual = input:gsub("[xXyYzZ]%s*[:=]%s*[-+]?%d+", " ")
+        residual = residual:gsub("[,;]", " ")
+        --- @type string[]
+        local nums = {}
+        for n in residual:gmatch("[-+]?%d+") do
+            table.insert(nums, n)
+        end
+        if #nums >= 3 then
+            out.x = out.x or toint(nums[1])
+            out.y = out.y or toint(nums[2])
+            out.z = out.z or toint(nums[3])
+        end
+    end
+
+    if out.x and out.y and out.z then
+        return out.x, out.y, out.z, nil
+    end
+
+    --- @type string[]
+    local missing = {}
+    if not out.x then table.insert(missing, "x") end
+    if not out.y then table.insert(missing, "y") end
+    if not out.z then table.insert(missing, "z") end
+    return nil, nil, nil, "Missing values: " .. table.concat(missing, ", ")
 end
 
 return Console

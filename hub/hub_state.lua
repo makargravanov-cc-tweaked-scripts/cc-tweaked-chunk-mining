@@ -14,8 +14,23 @@
 ---@field containsDrone fun(self: HubState, droneId: integer): boolean
 ---@field rootChunk ChunkEntity|nil
 ---@field position Vec|nil
+---
+---//////////////
 ---@field fuelPods FuelPod[]
+---@field fuelQeueue ConcurrentQueue
+---@field addFuelPod fun(self: HubState, pod: FuelPod)
+---@field removeFuelPod fun(self: HubState, pod: FuelPod)
+---@field subscribeDroneToFuelPod fun(self: HubState, pod: FuelPod, droneId: integer) : boolean
+---@field unsubscribeDroneFromFuelPod fun(self: HubState, pod: FuelPod, droneId: integer)
+---
 ---@field cargoPods CargoPod[]
+---@field cargoQeueue ConcurrentQueue
+---@field addCargoPod fun(self: HubState, pod: CargoPod)
+---@field removeCargoPod fun(self: HubState, pod: CargoPod)
+---@field subscribeDroneToCargoPod fun(self: HubState, pod: CargoPod, droneId: integer) : boolean
+---@field unsubscribeDroneFromCargoPod fun(self: HubState, pod: CargoPod, droneId: integer)
+---//////////////
+---
 ---@field id integer
 ---@field registerChunksGrid fun(self: HubState, gridSize: integer?)
 ---@field getChunkId fun(self: HubState, chunkVec: Vec): string
@@ -23,8 +38,11 @@
 ---@field getCenterChunk fun(self: HubState): Vec|nil
 
 local gpsUtil = require("lib.gps_util")
-local ChunkWorkRange = require("hub/entities/chunk_work_range")
-local ChunkEntity = require("hub/entities/chunk_entity")
+local ChunkWorkRange = require("hub.entities.chunk_work_range")
+local ChunkEntity = require("hub.entities.chunk_entity")
+local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
+local FuelPod = require("hub.entities.inventory.fuel_pod")
+local CargoPod = require("hub.entities.inventory.cargo_pod")
 
 local HubState = {}
 HubState.__index = HubState
@@ -40,9 +58,89 @@ function HubState.new()
     self.rootChunk = nil
     self.fuelPods = {}
     self.cargoPods = {}
+    self.fuelQeueue = ConcurrentQueue.new()
+    self.cargoQeueue = ConcurrentQueue.new()
     self.id = os.getComputerID()
     return self
 end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return boolean
+function HubState:subscribeDroneToFuelPod(droneId)
+    for _, pod in pairs(self.fuelPods) do
+        if pod.isOccupied == false then
+            return pod:subscribeDrone(droneId)
+        end
+    end
+    self.fuelQeueue:push(droneId)
+    return false
+end
+
+--- @param self HubState
+--- @param droneId integer
+function HubState:unsubscribeDroneFromFuelPod(droneId)
+    for _, pod in pairs(self.fuelPods) do
+        pod:unsubscribeDrone(droneId)
+    end
+end
+
+--- 
+--- @param self HubState
+--- @param pod FuelPod
+function HubState:addFuelPod(pod)
+    table.insert(self.fuelPods, pod)
+end
+
+--- @param self HubState
+--- @param pod FuelPod
+function HubState:removeFuelPod(pod)
+    for i, p in pairs(self.fuelPods) do
+        if p:equals(pod) then
+            table.remove(self.fuelPods, i)
+            break
+        end
+    end
+end
+
+--- @param self HubState
+--- @param pod FuelPod
+function HubState:addCargoPod(pod)
+    table.insert(self.cargoPods, pod)
+end
+
+--- @param self HubState
+--- @param pod CargoPod
+function HubState:removeCargoPod(pod)
+    for i, p in pairs(self.cargoPods) do
+        if p:equals(pod) then
+            table.remove(self.cargoPods, i)
+            break
+        end
+    end
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return boolean
+function HubState:subscribeDroneToCargoPod(droneId)
+    for _, pod in pairs(self.cargoPods) do
+        if pod.isOccupied == false then
+            return pod:subscribeDrone(droneId)
+        end
+    end
+    self.cargoQeueue:push(droneId)
+    return false
+end
+
+--- @param self HubState
+--- @param droneId integer
+function HubState:unsubscribeDroneFromCargoPod(droneId)
+    for _, pod in pairs(self.cargoPods) do
+        pod:unsubscribeDrone(droneId)
+    end
+end
+
 
 --- Registers a chunk and its work ranges
 ---@param chunkId string
@@ -164,22 +262,22 @@ function HubState:registerChunksGrid(gridSize)
         print("Error: Hub position not set. Cannot register chunks.")
         return
     end
-    
+
     -- Set root chunk if not set
     if not self.rootChunk then
         local relativeChunk = gpsUtil.chunkOfRelativeTo(self.position, self.position)
         self.rootChunk = ChunkEntity.new(centerChunk, relativeChunk)
     end
-    
+
     local offset = math.floor(gridSize / 2)
     local registeredCount = 0
-    
+
     for dz = -offset, offset do
         for dx = -offset, offset do
             -- Calculate chunk coordinates relative to center
             local chunkVec = {x = centerChunk.x + dx, y = 0, z = centerChunk.z + dz}
             local chunkId = self:getChunkId(chunkVec)
-            
+
             -- Only register if not already registered
             if not self.chunkWorkMap[chunkId] then
                 -- Create a single work range covering the entire chunk (1-256 blocks)
@@ -189,7 +287,7 @@ function HubState:registerChunksGrid(gridSize)
             end
         end
     end
-    
+
     print("Registered " .. registeredCount .. " new chunks in " .. gridSize .. "x" .. gridSize .. " grid.")
     print("Center chunk: " .. self:getChunkId(centerChunk))
 end
