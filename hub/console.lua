@@ -5,6 +5,7 @@
 --- @field heigh integer
 --- @field scale number
 --- @field monitor ccTweaked.peripheral.wrappedPeripheral|nil
+--- @field pendingChunkIds table
 --- @field new fun(hubState: HubState, droneService: DroneService): Console
 --- @field run fun(self: Console)
 --- @field handleHelp fun(self: Console)
@@ -19,7 +20,10 @@
 --- @field assignDroneToChunk fun(self: Console, chunkId: string): boolean
 --- @field unassignDroneFromChunk fun(self: Console, chunkId: string): boolean
 --- @field displayChunkGrid fun(self: Console): boolean
+--- @field handleAssignDrones fun(self: Console, n: integer)
+--- @field handleResetAssignments fun(self: Console)
 
+local ChunkWorkRange = require("hub/entities/chunk_work_range")
 local Console = {}
 Console.__index = Console
 
@@ -33,6 +37,7 @@ function Console.new(hubState, droneService)
     self.droneService = droneService
     self.monitor = nil
     self.scale = 1
+    self.pendingChunkIds = {}
     self.width, self.heigh = term.getSize()
     return self
 end
@@ -41,13 +46,13 @@ end
 --- @param self Console
 function Console:handleHelp()
     print("Available commands:")
-    print("  help           - Show this help message")
-    print("  status         - Show hub status and statistics")
-    print("  list-drones    - List all registered drone IDs")
-    print("  search-drones  - Search for and register new drones")
+    print("  help            - Show this help message")
+    print("  status          - Show hub status and statistics")
+    print("  list-drones     - List all registered drone IDs")
+    print("  search-drones   - Search for and register new drones")
     print("  register-chunks - Register 5x5 grid of chunks around hub")
-    print("  show-chunks    - Display 5x5 chunk grid visualization")
-    print("  quit/exit      - Exit the console")
+    print("  show-chunks     - Display 5x5 chunk grid visualization")
+    print("  quit/exit       - Exit the console")
 end
 
 --- Handles the "status" command
@@ -99,17 +104,33 @@ end
 --- @param mouseX number
 --- @param mouseY number
 function Console:handleChunkClick(mouseX, mouseY)
-    local centerChunk = self.hubState:getCenterChunk()
-    if not centerChunk then
-        print("Error: Hub position not set. Cannot handle chunk click.")
+    local gridSize = 5
+    local offset = math.floor(gridSize / 2)
+    local gridStartX = 2
+    local gridStartY = 2
+    local relX = mouseX - gridStartX
+    local relY = mouseY - gridStartY
+    if relX < 0 or relY < 0 or relX >= gridSize or relY >= gridSize then
+        print("Не попал по чанку")
         return
     end
 
-    local gridSize = 5
-
-
-
-
+    local centerChunk = self.hubState:getCenterChunk()
+    if centerChunk~=nil then
+        print("relX=".. relX .. " relY=" .. relY)
+        local chunkVec = { x = centerChunk.x + (relX - offset), y = 0, z = centerChunk.z + (relY - offset) }
+        local chunkId = self.hubState:getChunkId(chunkVec)
+        self.pendingChunkIds = self.pendingChunkIds or {}
+        if not self.pendingChunkIds[chunkId] then
+            self.pendingChunkIds[chunkId] = true
+            print("assigned: " .. chunkId)
+        else
+            self.pendingChunkIds[chunkId] = nil
+            print("unassigned: " .. chunkId)
+        end
+    else
+        print("center chunk is nullptr")
+    end
 end
 
 --- Attempts to assign an available drone to a chunk
@@ -163,12 +184,26 @@ function Console:displayChunkGrid()
         return
     end
 
+    -- Collect all "selected for assignment" chunkIds, including already assigned
+    self.pendingChunkIds = self.pendingChunkIds or {}
+    for chunkId, ranges in pairs(self.hubState.chunkWorkMap) do
+        local assigned = false
+        for _, range in ipairs(ranges) do
+            if range.assignedDroneId ~= nil then
+                assigned = true
+                break
+            end
+        end
+        if assigned then
+            self.pendingChunkIds[chunkId] = true
+        end
+    end
+
     self.monitor.clear()
     self.width, self.heigh = self.monitor.getSize()
 
     local gridSize = 5
     local offset = math.floor(gridSize / 2)
-    -- Рисуем сетку чанков
     for dz = -offset, offset do
         for dx = -offset, offset do
             local chunkVec = {
@@ -180,21 +215,25 @@ function Console:displayChunkGrid()
             local px = dx + offset + 2
             local py = dz + offset + 2
 
+            -- Select color for chunk
             local color
-            if not self.hubState.chunkWorkMap[chunkId] then
-                color = colors.black
+            if self.pendingChunkIds[chunkId] then
+                color = colors.yellow   -- Selected for assignment (yellow)
+            elseif not self.hubState.chunkWorkMap[chunkId] then
+                color = colors.black    -- Not registered
             elseif dx == 0 and dz == 0 then
-                color = colors.blue
+                color = colors.blue     -- Center chunk
             elseif self.hubState:hasAssignedDrone(chunkId) then
-                color = colors.green
+                color = colors.green    -- Has assigned drone
             else
-                color = colors.red
+                color = colors.red      -- Registered, no drone
             end
 
             paintutils.drawPixel(px, py, color)
         end
     end
 
+    -- Direction labels
     self.monitor.setCursorPos(1, offset + 2)
     self.monitor.write("-X")
     self.monitor.setCursorPos(gridSize + 3, offset + 2)
@@ -204,8 +243,10 @@ function Console:displayChunkGrid()
     self.monitor.setCursorPos(offset + 2, gridSize + 3)
     self.monitor.write("+Z")
 
-    print("Click on a chunk square to assign/unassign a drone. Press 'q' to exit.")
+    print("Click on a chunk square to select/unselect chunk for drone assignment. Press 'q' to exit.")
+    print("Legend: yellow = selected for assignment, black = not registered, blue = center, green = has drone, red = registered, no drone.")
 end
+
 --- Handles the "show-chunks" command
 --- @param self Console
 function Console:handleShowChunks()
@@ -255,6 +296,87 @@ function Console:handleUnknownCommand(cmd)
     print("Unknown command. Type 'help' for available commands.")
 end
 
+function Console:handleAssignDrones(n)
+    if not self.pendingChunkIds then
+        print("No selected chunks!")
+        return
+    end
+
+    local chunksToAssign = {}
+    for chunkId, _ in pairs(self.pendingChunkIds) do
+        table.insert(chunksToAssign, chunkId)
+    end
+
+    if #chunksToAssign == 0 then
+        print("No selected chunks! (1)")
+        return
+    end
+
+    local freeDrones = {}
+    for _, droneId in ipairs(self.hubState.drones) do
+        if not self.hubState.droneAssignment[droneId] then
+            table.insert(freeDrones, droneId)
+        end
+    end
+
+    local required = #chunksToAssign * n
+    if #freeDrones < required then
+        print("Too small number of drones! Required: " .. required .. ", free: " .. #freeDrones)
+        return
+    end
+
+    local droneIdx = 1
+    for _, chunkId in ipairs(chunksToAssign) do
+        local ranges = self.hubState.chunkWorkMap[chunkId]
+
+        if ranges and (#ranges ~= n or ranges[1].assignedDroneId ~= nil or (#ranges == 1 and ranges[1].assignedDroneId == nil)) then
+            local r = ranges[1]
+            local totalLen = r:getLength()
+            local lenPerDrone = math.floor(totalLen / n)
+            local newRanges = {}
+            local fromIdx = r.from
+            for i = 1, n do
+                local toIdx = (i == n) and r.to or (fromIdx + lenPerDrone - 1)
+                table.insert(newRanges, ChunkWorkRange.new(fromIdx, toIdx, nil))
+                fromIdx = toIdx + 1
+            end
+            self.hubState:registerChunk(chunkId, newRanges)
+            ranges = newRanges
+        end
+
+        for i = 1, n do
+            local droneId = freeDrones[droneIdx]
+            droneIdx = droneIdx + 1
+            self.hubState:assignDrone(droneId, chunkId, i)
+        end
+    end
+
+    print("Drones are assigned (" .. n .. " drones per chunk).")
+    self.pendingChunkIds = {}
+end
+
+
+--- Resets all drone assignments and chunk ranges to default (single range per chunk, none assigned)
+--- @param self Console
+function Console:handleResetAssignments()
+    print("Resetting all assignments and chunk ranges...")
+    -- Unassign all drones first
+    for _, droneId in ipairs(self.hubState.drones) do
+        self.hubState:unassignDrone(droneId.id)
+    end
+
+    -- For all chunks that have been registered: reset ranges
+    for chunkId, ranges in pairs(self.hubState.chunkWorkMap) do
+        -- Always replace with just ONE default range
+        self.hubState:registerChunk(chunkId, {ChunkWorkRange.new(1, 256, nil)})
+    end
+
+    -- Clear selection
+    self.pendingChunkIds = {}
+
+    print("All assignments and chunk work ranges reset to defaults.")
+end
+
 --- Main console loop
 --- @param self Console
 function Console:run()
@@ -265,7 +387,7 @@ function Console:run()
         if not line then break end
         local cmd = line:lower()
 
-        if cmd == "help" then
+        if cmd == "help" or "h" then
             self:handleHelp()
         elseif cmd == "status" then
             self:handleStatus()
@@ -273,10 +395,19 @@ function Console:run()
             self:handleListDrones()
         elseif cmd == "search-drones" then
             self:handleSearchDrones()
-        elseif cmd == "register-chunks" then
+        elseif cmd == "register-chunks" or "rc" then
             self:handleRegisterChunks()
-        elseif cmd == "show-chunks" then
+        elseif cmd == "show-chunks" or "sc"then
             self:handleShowChunks()
+        elseif cmd:find("^assign%-drones%s") or cmd == "ad" then
+            local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
+            if not n or n < 1 then
+                print("Wrong format! Example: assign-drones 2")
+            else
+                self:handleAssignDrones(n)
+            end    
+        elseif cmd:find("^reset%-assignments$") or cmd == "ra" then
+            self:handleResetAssignments()
         elseif cmd == "quit" or cmd == "exit" then
             if self:handleQuit() then
                 break

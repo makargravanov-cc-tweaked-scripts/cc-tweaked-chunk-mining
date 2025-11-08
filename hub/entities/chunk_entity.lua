@@ -16,7 +16,7 @@ function ChunkEntity.new(coordAbsolute, coordRelative)
 end
 
 function ChunkEntity:toString()
-    return tostring(self.coordAbsolute)
+    return tostring(self.coordAbsolute.x) .. "," .. tostring(self.coordRelative.z)
 end
 
 return ChunkEntity

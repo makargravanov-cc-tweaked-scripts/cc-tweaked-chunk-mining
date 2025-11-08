@@ -15,7 +15,7 @@ local presets = {
         "lib/net/msg.lua",
     },
     hub = {
-        "hub_run.lua",
+        "run_hub.lua",
         "hub/hub.lua",
         "hub/main.lua",
         "hub/hub_state.lua",
@@ -29,7 +29,7 @@ local presets = {
         "hub/services/drone_service.lua",
     },
     drone = {
-        "drone_run.lua",
+        "run_drone.lua",
         "drone/main.lua",
         "drone/drone.lua",
         "drone/drone_state.lua",
@@ -85,13 +85,31 @@ local function downloadFiles(list)
     end
 end
 
+local function uninstallFiles(list, selfPath)
+    for _, path in ipairs(list) do
+        if fs.exists(path) and path ~= selfPath then
+            local ok = pcall(function() fs.delete(path) end)
+            if ok then
+                print("Deleted: " .. path)
+            else
+                print("Failed to delete: " .. path)
+            end
+        end
+    end
+end
+
 local args = {...}
 local choice = args[1]
+local selfScriptPath = shell.getRunningProgram and shell.getRunningProgram() or "install.lua"
+
 if not choice then
-    print("Use: install <hub|drone|all>")
+    print("Use: install <hub|drone|all|u>")
     return
 end
-if presets[choice] then
+if choice == "u" or choice == "uninstall" then
+    uninstallFiles(presets.all, selfScriptPath)
+    print("Uninstall completed. Only this script remains.")
+elseif presets[choice] th
     downloadFiles(presets[choice])
     print("Loading '" .. choice .. "' is completed.")
 else

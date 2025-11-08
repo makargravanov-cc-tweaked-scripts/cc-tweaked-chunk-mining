@@ -61,6 +61,7 @@ end
 --- @param self Hub
 function Hub:initialize()
     self.droneService:searchForDrones()
+    self.hubState:registerChunksGrid(5)
     
 end
 
