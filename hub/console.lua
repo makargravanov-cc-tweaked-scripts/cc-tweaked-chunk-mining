@@ -397,6 +397,7 @@ function Console:handleFuel()
         if not line then break end
         ---@type string
         local cmd = line:lower()
+        if cmd == "exit" then break end
         Console.parseXYZ(cmd)
         local x, y, z = Console.parseXYZ(cmd)
         self.hubState:addFuelPod(FuelPod.new(Vec.new(x, y, z)))
@@ -413,6 +414,7 @@ function Console:handleCargo()
         if not line then break end
         ---@type string
         local cmd = line:lower()
+        if cmd == "exit" then break end
         Console.parseXYZ(cmd)
         local x, y, z = Console.parseXYZ(cmd)
         self.hubState:addCargoPod(CargoPod.new(Vec.new(x, y, z)))
