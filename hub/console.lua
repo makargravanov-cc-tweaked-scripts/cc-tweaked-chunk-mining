@@ -3,6 +3,7 @@
 --- @field droneService DroneService
 --- @field width integer
 --- @field heigh integer
+--- @field monitor ccTweaked.peripheral.wrappedPeripheral|nil
 --- @field new fun(hubState: HubState, droneService: DroneService): Console
 --- @field run fun(self: Console)
 --- @field handleHelp fun(self: Console)
@@ -29,6 +30,7 @@ function Console.new(hubState, droneService)
     local self = setmetatable({}, Console)
     self.hubState = hubState
     self.droneService = droneService
+    self.monitor = nil
     self.width, self.heigh = term.getSize()
     return self
 end
@@ -43,7 +45,6 @@ function Console:handleHelp()
     print("  search-drones  - Search for and register new drones")
     print("  register-chunks - Register 5x5 grid of chunks around hub")
     print("  show-chunks    - Display 5x5 chunk grid visualization")
-    print("  chunk-click    - Handle chunk click (internal)")
     print("  quit/exit      - Exit the console")
 end
 
@@ -199,25 +200,31 @@ end
 --- Handles the "show-chunks" command
 --- @param self Console
 function Console:handleShowChunks()
-    -- Display the chunk grid initially
-    self:displayChunkGrid()
-    
+    self.monitor = peripheral.wrap("top");
+    if self.monitor ~= nil then
+        term.redirect(self.monitor)
+         -- Display the chunk grid initially
+        self:displayChunkGrid()
     -- Enter an interactive loop to handle mouse clicks and keyboard input
-    while true do
-        local event, p1, p2, p3 = os.pullEvent()
-        
-        if event == "mouse_click" then
-            local button, mouseX, mouseY = p1, p2, p3
-            if button == 1 then  -- Left mouse button
-                self:handleChunkClick(mouseX, mouseY)
-                -- Redraw the grid to show updated status
-                self:displayChunkGrid()
-            end
-        elseif event == "char" then
-            if p1 == "q" then
-                break
+        while true do
+            local event, p1, p2, p3 = os.pullEvent()
+
+            if event == "mouse_click" then
+                local button, mouseX, mouseY = p1, p2, p3
+                if button == 1 then  -- Left mouse button
+                    self:handleChunkClick(mouseX, mouseY)
+                    -- Redraw the grid to show updated status
+                    self:displayChunkGrid()
+                end
+            elseif event == "char" then
+                if p1 == "q" then
+                    break
+                end
             end
         end
+        term.redirect(term.native())
+    else
+        print("No monitor on top")
     end
 end
 
