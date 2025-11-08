@@ -387,7 +387,7 @@ function Console:run()
         if not line then break end
         local cmd = line:lower()
 
-        if cmd == "help" or "h" then
+        if cmd == "help" or "-h" then
             self:handleHelp()
         elseif cmd == "status" then
             self:handleStatus()
@@ -395,18 +395,18 @@ function Console:run()
             self:handleListDrones()
         elseif cmd == "search-drones" then
             self:handleSearchDrones()
-        elseif cmd == "register-chunks" or "rc" then
+        elseif cmd == "register-chunks" or "-rc" then
             self:handleRegisterChunks()
-        elseif cmd == "show-chunks" or "sc"then
+        elseif cmd == "show-chunks" or "-sc"then
             self:handleShowChunks()
-        elseif cmd:find("^assign%-drones%s") or cmd == "ad" then
+        elseif cmd:find("^assign%-drones%s") or cmd == "-ad" then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n or n < 1 then
                 print("Wrong format! Example: assign-drones 2")
             else
                 self:handleAssignDrones(n)
             end    
-        elseif cmd:find("^reset%-assignments$") or cmd == "ra" then
+        elseif cmd:find("^reset%-assignments$") or cmd == "-ra" then
             self:handleResetAssignments()
         elseif cmd == "quit" or cmd == "exit" then
             if self:handleQuit() then
