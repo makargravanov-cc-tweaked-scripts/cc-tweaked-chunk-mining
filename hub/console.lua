@@ -3,6 +3,7 @@
 --- @field droneService DroneService
 --- @field width integer
 --- @field heigh integer
+--- @field scale number
 --- @field monitor ccTweaked.peripheral.wrappedPeripheral|nil
 --- @field new fun(hubState: HubState, droneService: DroneService): Console
 --- @field run fun(self: Console)
@@ -31,6 +32,7 @@ function Console.new(hubState, droneService)
     self.hubState = hubState
     self.droneService = droneService
     self.monitor = nil
+    self.scale = 1
     self.width, self.heigh = term.getSize()
     return self
 end
@@ -204,18 +206,20 @@ function Console:handleShowChunks()
     if self.monitor ~= nil then
         term.redirect(self.monitor)
          -- Display the chunk grid initially
+        self.monitor.setTextScale(self.scale)
         self:displayChunkGrid()
     -- Enter an interactive loop to handle mouse clicks and keyboard input
         while true do
             local event, p1, p2, p3 = os.pullEvent()
-
             if event == "mouse_click" then
                 local button, mouseX, mouseY = p1, p2, p3
                 if button == 1 then  -- Left mouse button
                     self:handleChunkClick(mouseX, mouseY)
-                    -- Redraw the grid to show updated status
                     self:displayChunkGrid()
                 end
+            elseif event == "mouse_scroll" then
+                self.scale = math.max(0.5, math.min(5, self.scale + 0.5 * p1))
+                self.monitor.setTextScale(self.scale)
             elseif event == "char" then
                 if p1 == "q" then
                     break
