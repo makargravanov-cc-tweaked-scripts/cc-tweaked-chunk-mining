@@ -220,6 +220,7 @@ function Console:handleShowChunks()
             elseif event == "mouse_scroll" then
                 self.scale = math.max(0.5, math.min(5, self.scale + 0.5 * p1))
                 self.monitor.setTextScale(self.scale)
+                self:displayChunkGrid()
             elseif event == "char" then
                 if p1 == "q" then
                     break
