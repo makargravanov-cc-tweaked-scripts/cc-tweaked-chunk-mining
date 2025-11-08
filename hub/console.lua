@@ -244,7 +244,7 @@ function Console:displayChunkGrid()
             -- Print colored square
             term.setTextColor(color)
             term.setBackgroundColor(color)
-            io.write("[]")
+            io.write("x")
             term.setTextColor(colors.white)
             term.setBackgroundColor(colors.black)
         end
