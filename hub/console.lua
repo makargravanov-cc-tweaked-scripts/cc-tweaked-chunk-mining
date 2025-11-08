@@ -1,6 +1,8 @@
 --- @class Console
 --- @field hubState HubState
 --- @field droneService DroneService
+--- @field width integer
+--- @field heigh integer
 --- @field new fun(hubState: HubState, droneService: DroneService): Console
 --- @field run fun(self: Console)
 --- @field handleHelp fun(self: Console)
@@ -27,6 +29,7 @@ function Console.new(hubState, droneService)
     local self = setmetatable({}, Console)
     self.hubState = hubState
     self.droneService = droneService
+    self.width, self.heigh = term.getSize()
     return self
 end
 
@@ -100,48 +103,10 @@ function Console:handleChunkClick(mouseX, mouseY)
     end
 
     local gridSize = 5
-    local offset = math.floor(gridSize / 2)
-    
-    -- Calculate grid coordinates based on mouse position
-    -- The grid starts at X=4 (after "    ") and Y=4 (after header lines)
-    local gridStartX = 4
-    local gridStartY = 9  -- After header and directions
-    
-    -- Calculate which chunk was clicked based on mouse position
-    local clickedDx = mouseX - gridStartX
-    local clickedDz = (mouseY - gridStartY) - 1  -- -1 to adjust for grid indexing
-    
-    -- The grid is 2*offset+1 chunks wide (5x5), each chunk takes 2 characters ([])
-    -- So each chunk is 2 characters wide
-    local chunkDx = math.floor(clickedDx / 2) - offset
-    local chunkDz = offset - math.floor(clickedDz)  -- Flip the Z axis
-    
-    -- Check if click is within grid bounds
-    if chunkDx >= -offset and chunkDx <= offset and chunkDz >= -offset and chunkDz <= offset then
-        local chunkVec = {x = centerChunk.x + chunkDx, y = 0, z = centerChunk.z + chunkDz}
-        local chunkId = self.hubState:getChunkId(chunkVec)
-        
-        -- Check if chunk is registered
-        if self.hubState.chunkWorkMap[chunkId] then
-            local hasDrone = self.hubState:hasAssignedDrone(chunkId)
-            
-            if hasDrone then
-                -- Unassign drone if one is already assigned
-                self:unassignDroneFromChunk(chunkId)
-                print("Unassigned drone from chunk " .. chunkId)
-            else
-                -- Assign a drone if none is assigned
-                local success = self:assignDroneToChunk(chunkId)
-                if success then
-                    print("Assigned drone to chunk " .. chunkId)
-                else
-                    print("No available drones to assign to chunk " .. chunkId)
-                end
-            end
-        else
-            print("Clicked on unregistered chunk " .. chunkId)
-        end
-    end
+
+
+
+
 end
 
 --- Attempts to assign an available drone to a chunk
@@ -196,74 +161,8 @@ function Console:displayChunkGrid()
     end
 
     local gridSize = 5
-    local offset = math.floor(gridSize / 2)
-    local gpsUtil = require("lib.gps_util")
-
-    -- Print header with directions
-    print("")
-    print("      -Z")
-    print("")
-
-    -- Print top row with +Z direction
-    io.write("    ")
-    for dx = -offset, offset do
-        io.write(" ")
-    end
-    print("+Z")
-    print("")
-
-    -- Print grid rows
-    for dz = offset, -offset, -1 do
-        -- Print -X direction on left side
-        if dz == 0 then
-            io.write("-X ")
-        else
-            io.write("   ")
-        end
-
-        -- Print chunk squares
-        for dx = -offset, offset do
-            local chunkVec = {x = centerChunk.x + dx, y = 0, z = centerChunk.z + dz}
-            local chunkId = self.hubState:getChunkId(chunkVec)
-            local isRegistered = self.hubState.chunkWorkMap[chunkId] ~= nil
-            local isCenter = (dx == 0 and dz == 0)
-            local hasDrone = self.hubState:hasAssignedDrone(chunkId)
-
-            -- Determine color
-            local color
-            if not isRegistered then
-                color = colors.black
-            elseif isCenter then
-                color = colors.blue
-            elseif hasDrone then
-                color = colors.green
-            else
-                color = colors.red
-            end
-
-            -- Print colored square
-            term.setTextColor(color)
-            term.setBackgroundColor(color)
-            io.write("x")
-            term.setTextColor(colors.white)
-            term.setBackgroundColor(colors.black)
-        end
-
-        -- Print +X direction on right side
-        if dz == 0 then
-            print(" +X")
-        else
-            print("")
-        end
-    end
-
-    -- Print bottom row with -Z direction
-    print("")
-    io.write("    ")
-    for dx = -offset, offset do
-        io.write(" ")
-    end
-    print("-Z")
+    
+    print(self.heigh .. " - " .. self.width)
 
     -- Print legend
     print("")
