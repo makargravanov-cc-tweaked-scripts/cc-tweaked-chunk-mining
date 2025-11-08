@@ -111,7 +111,7 @@ function Console:handleChunkClick(mouseX, mouseY)
     local relX = mouseX - gridStartX
     local relY = mouseY - gridStartY
     if relX < 0 or relY < 0 or relX >= gridSize or relY >= gridSize then
-        print("Не попал по чанку")
+        print("No hit in chunk!")
         return
     end
 
@@ -199,6 +199,7 @@ function Console:displayChunkGrid()
         end
     end
 
+    self.monitor.setBackgroundColor(colors.black)
     self.monitor.clear()
     self.width, self.heigh = self.monitor.getSize()
 
@@ -235,13 +236,13 @@ function Console:displayChunkGrid()
 
     -- Direction labels
     self.monitor.setCursorPos(1, offset + 2)
-    self.monitor.write("-X")
+    self.monitor.write("x")
     self.monitor.setCursorPos(gridSize + 3, offset + 2)
-    self.monitor.write("+X")
+    self.monitor.write("X")
     self.monitor.setCursorPos(offset + 2, 1)
-    self.monitor.write("-Z")
+    self.monitor.write("z")
     self.monitor.setCursorPos(offset + 2, gridSize + 3)
-    self.monitor.write("+Z")
+    self.monitor.write("Z")
 
     print("Click on a chunk square to select/unselect chunk for drone assignment. Press 'q' to exit.")
     print("Legend: yellow = selected for assignment, black = not registered, blue = center, green = has drone, red = registered, no drone.")
@@ -265,6 +266,7 @@ function Console:handleShowChunks()
                     self:handleChunkClick(mouseX, mouseY)
                     self:displayChunkGrid()
                 end
+                print("X: " .. mouseX .. " Y: " .. mouseY)
             elseif event == "mouse_scroll" then
                 self.scale = math.max(0.5, math.min(5, self.scale + 0.5 * p1))
                 self.monitor.setTextScale(self.scale)
