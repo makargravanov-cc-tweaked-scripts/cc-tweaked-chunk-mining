@@ -162,46 +162,50 @@ function Console:displayChunkGrid()
         print("Error: Hub position not set. Cannot display chunks.")
         return
     end
-    self.monitor.clear()
 
+    self.monitor.clear()
     self.width, self.heigh = self.monitor.getSize()
 
     local gridSize = 5
-    
-    print(self.heigh .. " - " .. self.width)
+    local offset = math.floor(gridSize / 2)
+    -- Рисуем сетку чанков
+    for dz = -offset, offset do
+        for dx = -offset, offset do
+            local chunkVec = {
+                x = centerChunk.x + dx,
+                y = 0,
+                z = centerChunk.z + dz
+            }
+            local chunkId = self.hubState:getChunkId(chunkVec)
+            local px = dx + offset + 2
+            local py = dz + offset + 2
 
-    -- Print legend
-    print("")
-    term.setTextColor(colors.black)
-    term.setBackgroundColor(colors.black)
-    io.write("██")
-    term.setTextColor(colors.white)
-    term.setBackgroundColor(colors.black)
-    print(" - Not registered")
+            local color
+            if not self.hubState.chunkWorkMap[chunkId] then
+                color = colors.black
+            elseif dx == 0 and dz == 0 then
+                color = colors.blue
+            elseif self.hubState:hasAssignedDrone(chunkId) then
+                color = colors.green
+            else
+                color = colors.red
+            end
 
-    term.setTextColor(colors.blue)
-    term.setBackgroundColor(colors.blue)
-    io.write("██")
-    term.setTextColor(colors.white)
-    term.setBackgroundColor(colors.black)
-    print(" - Center chunk")
+            paintutils.drawPixel(px, py, color)
+        end
+    end
 
-    term.setTextColor(colors.red)
-    term.setBackgroundColor(colors.red)
-    io.write("██")
-    term.setTextColor(colors.white)
-    term.setBackgroundColor(colors.black)
-    print(" - Registered, no drone")
+    self.monitor.setCursorPos(1, offset + 2)
+    self.monitor.write("-X")
+    self.monitor.setCursorPos(gridSize + 3, offset + 2)
+    self.monitor.write("+X")
+    self.monitor.setCursorPos(offset + 2, 1)
+    self.monitor.write("-Z")
+    self.monitor.setCursorPos(offset + 2, gridSize + 3)
+    self.monitor.write("+Z")
 
-    term.setTextColor(colors.green)
-    term.setBackgroundColor(colors.green)
-    io.write("██")
-    term.setTextColor(colors.white)
-    term.setBackgroundColor(colors.black)
-    print(" - Has assigned drone")
     print("Click on a chunk square to assign/unassign a drone. Press 'q' to exit.")
 end
-
 --- Handles the "show-chunks" command
 --- @param self Console
 function Console:handleShowChunks()
@@ -214,9 +218,9 @@ function Console:handleShowChunks()
     -- Enter an interactive loop to handle mouse clicks and keyboard input
         while true do
             local event, p1, p2, p3 = os.pullEvent()
-            if event == "mouse_click" then
-                local button, mouseX, mouseY = p1, p2, p3
-                if button == 1 then  -- Left mouse button
+            if event == "monitor_touch" then
+                local side, mouseX, mouseY = p1, p2, p3
+                if side == "top" then
                     self:handleChunkClick(mouseX, mouseY)
                     self:displayChunkGrid()
                 end
