@@ -16,6 +16,12 @@ function Vec.new(x,y,z)
     return {x = x or 0, y = y or 0, z = z or 0}
 end
 
+---@param v Vec
+---@return Vec
+function Vec.copy(v)
+    return Vec.new(v.x, v.y, v.z)
+end
+
 ---@param a Vec
 ---@param b Vec
 ---@return Vec

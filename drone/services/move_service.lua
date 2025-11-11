@@ -10,10 +10,12 @@
 --- @field moveHorizontal fun(self: MoveService, targetX: number, targetZ: number): boolean
 --- @field droneNet DroneNet
 --- @field moveTo fun(self: MoveService, target: Vec)
+--- @field moveToWithFunction fun(self: MoveService, target: Vec, func: function)
 --- @field startUpStatus fun(self: MoveService, message: Message)
 --- @field finishUpdate fun(self: MoveService, message: Message)
 --- @field currentDirection ECurrentDirection
 --- @field currentMoveState EMoveState
+--- @field moveTest fun(self: MoveService)
 
 local Vec = require("lib.vec")
 local GpsUtil = require("lib.gps_util")
@@ -247,6 +249,44 @@ function MoveService:moveTo(target)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/down", "", self.droneState.id,{}))
+end
+
+--- @param self MoveService
+--- @param target Vec
+--- @param func function
+function MoveService:moveToWithFunction(target, func)
+    self.currentMoveState = EMoveState.WAIT
+    self.currentDirection = ECurrentDirection.VERTICAL
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+    while self.currentMoveState == EMoveState.WAIT do
+        sleep(1)
+    end
+    func()
+    self:moveVertical(self.droneState.baseY + self.droneState.delta)
+    self.currentMoveState = EMoveState.FINISH
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
+        sleep(1)
+    end
+    self:moveHorizontal(target.x, target.z)
+    self.currentMoveState = EMoveState.FINISH
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
+        sleep(1)
+    end
+    self:moveVertical(target.y)
+    self.currentMoveState = EMoveState.FINISH_OUT
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/down", "", self.droneState.id,{}))
+end
+
+--- @param self MoveService
+function MoveService:moveTest()
+    self:moveTo(self.droneState.targetPosition)
+    self:moveTo(self.droneState.initialPos)
 end
 
 return MoveService

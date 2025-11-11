@@ -2,8 +2,8 @@
 ---@enum EDroneTask
 local EDroneTask = {
     IDLE = 0,
-    REGISTER = 1
-    
+    TEST_MOVE = 1,
+    MINING = 2
 }
 
 return EDroneTask

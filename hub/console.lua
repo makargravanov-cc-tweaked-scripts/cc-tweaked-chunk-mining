@@ -27,13 +27,16 @@
 --- @field handleFuel fun(self: Console)
 --- @field handleCargo fun(self: Console)
 --- @
---- @field handleLatency fun(self: Console)
---- @field handleHeights fun(self: Console)
+--- @field handleLatency  fun(self: Console)
+--- @field handleHeights  fun(self: Console)
+--- @field handleTestMove fun(self: Console)
 
 local FuelPod = require("hub.entities.inventory.fuel_pod")
 local CargoPod = require("hub.entities.inventory.cargo_pod")
 local ChunkWorkRange = require("hub.entities.chunk_work_range")
 local Vec            = require("lib.vec")
+local HubNet        = require("hub.hub_net")
+local Message = require("lib.net.msg")
 local Console = {}
 Console.__index = Console
 
@@ -56,13 +59,19 @@ end
 --- @param self Console
 function Console:handleHelp()
     print("Available commands:")
-    print("  help            - Show this help message")
-    print("  status          - Show hub status and statistics")
-    print("  list-drones     - List all registered drone IDs")
-    print("  search-drones   - Search for and register new drones")
-    print("  register-chunks - Register 5x5 grid of chunks around hub")
-    print("  show-chunks     - Display 5x5 chunk grid visualization")
-    print("  quit/exit       - Exit the console")
+    print("  help              - Show this help")
+    print("  status            - Hub status and statistics")
+    print("  list-drones       - List registered drones")
+    print("  search-drones     - Discover new drones nearby")
+    print("  register-chunks   - Register 5x5 chunk grid")
+    print("  show-chunks       - Visualize chunk grid")
+    print("  assign-drones N   - Assign N drones per selected chunk")
+    print("  reset-assignments - Reset all assignments and chunk ranges")
+    print("  fuel              - Manage fuel pods")
+    print("  cargo             - Manage cargo pods")
+    print("  latency           - Set/check hub network latency")
+    print("  baseY/highYDig/lowYDig - Set excavation heights (`x y z` syntax)")
+    print("  quit/exit         - Exit console")
 end
 
 --- Handles the "status" command
@@ -453,6 +462,51 @@ function Console:handleHeights()
     print("heights: baseY= " .. self.hubState.baseY .. " highYDig=" .. self.hubState.highYDig .. " lowYDig=" .. self.hubState.lowYDig)
 end
 
+--- @param self Console
+function Console:handleTestMove()
+    print("Start coordinates for assigned drone ranges:")
+    for droneId, assignment in pairs(self.hubState.droneAssignment) do
+        local chunkId = assignment.chunkId
+        local rangeIndex = assignment.rangeIndex
+        local ranges = self.hubState.chunkWorkMap[chunkId]
+        local range = ranges and ranges[rangeIndex]
+        if not range then
+            print(string.format("Drone %s: NO RANGE", tostring(droneId)))
+            goto continue
+        end
+        local chunkX, chunkZ = tonumber(chunkId:match("^([%-]?%d+),([%-]?%d+)$"))
+        if not chunkX or not chunkZ then
+            print(string.format("Drone %s: BAD CHUNKID %s", tostring(droneId), chunkId))
+            goto continue
+        end
+        local chunkVec = Vec.new(chunkX, 0, chunkZ)
+        local startPos = require("lib.gps_util").nthBlockGlobal(chunkVec, range.from, true)
+        if startPos then
+            print(
+                string.format(
+                    "Drone %s: Chunk %s | Range %d | Start XYZ: %d %d %d (from=%d to=%d)",
+                    tostring(droneId),
+                    chunkId,
+                    rangeIndex,
+                    startPos.x, startPos.y, startPos.z,
+                    range.from, range.to
+                )
+            )
+            HubNet.send(droneId, Message.new(
+                "/drone/move-test",
+                "",
+                self.hubState.id,
+                {
+                    position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z)
+                }
+            ))
+        else
+            print(string.format("Drone %s: FAILED TO CALC GLOBAL COORDS", tostring(droneId)))
+        end
+        ::continue::
+    end
+end
+
 --- Main console loop
 --- @param self Console
 function Console:run()
@@ -481,8 +535,10 @@ function Console:run()
             self:handleCargo()
         elseif cmd == "latency" then
             self:handleLatency()
-        elseif cmd == "baseY / highYDig / lowYDig" then
+        elseif cmd == "baseY/highYDig/lowYDig" then
             self:handleHeights()
+        elseif cmd == "test-move" then
+            self:handleTestMove()
         elseif cmd:find("^assign%-drones%s") then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n or n < 1 then

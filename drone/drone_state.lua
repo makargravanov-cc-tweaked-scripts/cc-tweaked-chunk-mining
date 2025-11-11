@@ -21,6 +21,8 @@
 ---@field direction number
 ---@field waitingForUnloading boolean
 ---@field setWaitingForUnloading fun(self: DroneState, waitingForUnloading: boolean)
+---@field waitingForRefueling boolean
+---@field setWaitingForRefueling fun(self: DroneState, waitingForRefueling: boolean)
 ---
 ---@field targetPosition Vec
 ---@field setTargetPosition fun(self: DroneState, position: Vec)
@@ -28,10 +30,11 @@
 ---@field refuelingPosition Vec
 ---@field setRefuelingPosition fun(self: DroneState, position: Vec)
 ---@
----@field baseY    integer
----@field highYDig integer
----@field lowYDig  integer
----@field delta    integer
+---@field baseY      integer
+---@field highYDig   integer
+---@field lowYDig    integer
+---@field delta      integer
+---@field initialPos Vec
 
 local DroneState = {}
 local GpsUtil = require("lib.gps_util")
@@ -54,7 +57,8 @@ function DroneState.new()
                                baseY = 0,
                                highYDig = 0,
                                lowYDig = 0,
-                               delta = 0
+                               delta = 0,
+                               initialPos = GpsUtil.position()
                               }, DroneState)
     self.currentTask = EDroneTask.IDLE
     return self

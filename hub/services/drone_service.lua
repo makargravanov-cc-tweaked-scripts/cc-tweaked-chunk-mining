@@ -46,11 +46,9 @@ end
 
 ---@param self DroneService
 ---@param msg Message
-function DroneService:processFuelLoadRelease(msg)
+function DroneService:processRefuelRelease(msg)
     self.hubState:unsubscribeDroneFromFuelPod(msg.callbackId)
 end
-
-
 
 ---@param self DroneService
 ---@param msg Message

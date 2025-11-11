@@ -1,3 +1,4 @@
+local EDroneTask = require "lib.drone_tasks_enum"
 --- @class Drone
 --- @field droneState DroneState
 --- @field moveService MoveService
@@ -7,6 +8,7 @@
 --- @field msgQueue ConcurrentQueue
 --- @field new fun(): Drone
 --- @field listenCommands fun(self: Drone)
+--- @field processCurrentAction fun(self: Drone)
 
 local Drone = {}
 Drone.__index = Drone
@@ -62,6 +64,19 @@ function Drone:processQueue()
         else
             os.sleep(0.1)
         end
+    end
+end
+
+--- @param self Drone
+function Drone:processCurrentAction()
+    while true do
+        if self.droneState.currentTask == EDroneTask.IDLE then
+        elseif self.droneState.currentTask == EDroneTask.TEST_MOVE then
+            moveService:moveTest()
+            self.droneState.currentTask = EDroneTask.IDLE
+        elseif self.droneState.currentTask == EDroneTask.MINING then
+        end
+        os.sleep(1)
     end
 end
 

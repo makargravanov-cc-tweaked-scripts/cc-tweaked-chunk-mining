@@ -1,6 +1,6 @@
 
 --- @class FuelService
---- @
+--- @field refuelFromBiomassBlockChest fun() : boolean
 
 local FuelService = {}
 FuelService.__index = FuelService
@@ -15,5 +15,38 @@ end
 function FuelService.getFuelLevel()
     return turtle.getFuelLevel()
 end
+
+--- @return boolean
+function FuelService.refuelFromBiomassBlockChest()
+    local chest = peripheral.wrap("bottom")
+    if not chest or not chest.list then
+        error("Chest not found below turtle")
+    end
+
+    for slot, detail in pairs(chest.list()) do
+        if detail.name == "createaddition:biomass_pellet_block" then
+            local turtleFreeSlot = nil
+            for i = 1, 16 do
+                if turtle.getItemCount(i) == 0 then
+                    turtleFreeSlot = i
+                    break
+                end
+            end
+            if not turtleFreeSlot then
+                error("No empty slot in turtle inventory for refueling")
+            end
+
+            if chest.pullItems(peripheral.getName(turtle), slot, 1, turtleFreeSlot) > 0 then
+                turtle.select(turtleFreeSlot)
+                if turtle.refuel(1) then
+                    turtle.select(1)
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
 
 return FuelService

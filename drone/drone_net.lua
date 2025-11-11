@@ -12,6 +12,7 @@
 local router = require("lib.net.router").new()
 local msg    = require("lib.net.msg")
 local InventoryService = require("drone.services.inventory_service")
+local EDroneTask       = require("lib.drone_tasks_enum")
 
 local DroneNet = {}
 
@@ -38,15 +39,26 @@ function DroneNet:init()
     router:registerRoute("/drone/register", function(message)
         self.registryService:register(message)
     end)
+-------------------------------------------------------------------------
+    router:registerRoute("/drone/move-test", function(message)
+        ---@type Vec
+        local pos = message.payload.position
+        self.droneState:setTargetPosition(pos)
+        self.droneState.currentTask = EDroneTask.TEST_MOVE
+    end)
+    router:registerRoute("/drone/mining", function(message)
+    --- NOT IMPLEMENTED
+    end)
+-------------------------------------------------------------------------
     router:registerRoute("/drone/unload-approved", function(message)
         InventoryService.unloadApproved(self.droneState, message)
     end)
     router:registerRoute("/drone/fuel-approved", function(message)
-        -- NOT IMPLEMENTED
+        InventoryService.refuelApproved(self.droneState, message)
     end)
-    router:registerRoute("/drone/pod-unsubscribe-approved", function(message)
-        -- NOT IMPLEMENTED
-    end)
+    -- router:registerRoute("/drone/pod-unsubscribe-approved", function(message)
+    --     InventoryService.podUnsubscribeApproved(self.droneState, message)
+    -- end)
 --------------------------------------------------------------------------
     router:registerRoute("/drone/move/start/up/status", function(message)
         self.moveService:startUpStatus(message)

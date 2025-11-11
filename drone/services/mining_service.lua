@@ -8,6 +8,8 @@
 
 local GpsUtil = require("lib.gps_util")
 local InventoryService = require("drone.services.inventory_service")
+local Vec              = require("lib.vec")
+local FuelService      = require("drone.services.fuel_ervice")
 
 local MiningService = {}
 MiningService.__index = MiningService
@@ -62,8 +64,11 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
         self.droneState:updatePosition()
 
         InventoryService.dropSelectedItemsDown()
-        local freeSlots = InventoryService.countFreeChestSlots()
+        local freeSlots = InventoryService.getFreeSlots()
         print("free slots: " .. freeSlots)
+
+        local lastPosition = Vec.copy(self.droneState:getPosition())
+
         if freeSlots <= 4 then
             print("Need to unload inventory")
             InventoryService.requestUnloading(self.droneState)
@@ -75,6 +80,27 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
                 error("Unloading position not set")
             end
             self.moveService:moveTo(unloadingPosition)
+            InventoryService.dropAllItemsDown()
+            self.moveService:moveToWithFunction(lastPosition, function ()
+                InventoryService.processInventoryUnloadRelease(self.droneState)
+            end)
+        end
+
+        if FuelService.getFuelLevel() <= 2500 then
+            print("Need to refuel")
+            InventoryService.requestRefueling(self.droneState)
+            while self.droneState.waitingForRefueling do
+                os.sleep(1)
+            end
+            local refuellingPosition = self.droneState.targetPosition
+            if not refuellingPosition then
+                error("RefuellingPosition position not set")
+            end
+            self.moveService:moveTo(refuellingPosition)
+            FuelService.refuelFromBiomassBlockChest()
+            self.moveService:moveToWithFunction(lastPosition, function ()
+                InventoryService.processRefuelRelease(self.droneState)
+            end)
         end
     end
 end
