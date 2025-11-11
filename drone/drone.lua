@@ -16,7 +16,10 @@ local droneState = require("drone.drone_state").new()
 local moveService = require("drone.services.move_service").new(droneState)
 local registryService = require("drone.services.registry_service").new(droneState, moveService)
 local droneNet = require("drone.drone_net").new(droneState, registryService)
+droneNet.moveService = moveService
 droneNet:init()
+moveService.droneNet = droneNet
+
 
 
 local miningService = require("drone.services.mining_service").new(droneState, moveService)

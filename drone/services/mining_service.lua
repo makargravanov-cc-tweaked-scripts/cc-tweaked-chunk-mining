@@ -7,6 +7,7 @@
 --- @field mineColumn fun(self: MiningService, upperY: integer, lowerY: integer)
 
 local GpsUtil = require("lib.gps_util")
+local InventoryService = require("drone.services.inventory_service")
 
 local MiningService = {}
 MiningService.__index = MiningService
@@ -51,7 +52,7 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
         if not colGlobal then
             error("Failed to compute global coords for index " .. tostring(idx))
         end
-        if not self.moveService:moveVertical(upperY) then
+        if currentPos.y ~= upperY and not self.moveService:moveVertical(upperY) then
             error("Failed to move to upper Y (" .. tostring(upperY) .. ") before column " .. tostring(idx))
         end
         if not self.moveService:moveHorizontal(colGlobal.x, colGlobal.z) then
@@ -59,6 +60,22 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
         end
         self:mineColumn(upperY, lowerY)
         self.droneState:updatePosition()
+
+        InventoryService.dropSelectedItemsDown()
+        local freeSlots = InventoryService.countFreeChestSlots()
+        print("free slots: " .. freeSlots)
+        if freeSlots <= 4 then
+            print("Need to unload inventory")
+            InventoryService.requestUnloading(self.droneState)
+            while self.droneState.waitingForUnloading do
+                os.sleep(1)
+            end
+            local unloadingPosition = self.droneState.targetPosition
+            if not unloadingPosition then
+                error("Unloading position not set")
+            end
+            self.moveService:moveTo(unloadingPosition)
+        end
     end
 end
 

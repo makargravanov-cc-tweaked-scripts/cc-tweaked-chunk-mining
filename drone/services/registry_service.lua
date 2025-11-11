@@ -46,8 +46,12 @@ end
 function RegistryService:register(msg)
     print("RegistryService:register()")
     ---@type integer
-    local hubId = msg.payload.hubId
+    local hubId    = msg.payload.hubId
     self.droneState:register(hubId)
+    self.droneState.baseY    = msg.payload.baseY
+    self.droneState.highYDig = msg.payload.highYDig
+    self.droneState.lowYDig  = msg.payload.lowYDig
+    self.droneState.delta    = msg.payload.delta
     self.moveService:calibrateDirection()
     print("Registered drone with hub ID: "..hubId)
 end

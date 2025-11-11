@@ -26,6 +26,9 @@
 --- @
 --- @field handleFuel fun(self: Console)
 --- @field handleCargo fun(self: Console)
+--- @
+--- @field handleLatency fun(self: Console)
+--- @field handleHeights fun(self: Console)
 
 local FuelPod = require("hub.entities.inventory.fuel_pod")
 local CargoPod = require("hub.entities.inventory.cargo_pod")
@@ -421,6 +424,35 @@ function Console:handleCargo()
     end
 end
 
+--- @param self Console
+function Console:handleLatency()
+    print("Latency: " .. self.hubState.latency .. "s")
+    print("write 3 nubers but 2nd and 3rd will ignore")
+    local line = read()
+    if not line then return end
+    local cmd = line:lower()
+    Console.parseXYZ(cmd)
+    local x, y, z = Console.parseXYZ(cmd)
+    if x == nil then return end
+    self.hubState.latency = x
+    print("Latency: " .. self.hubState.latency .. "s")
+end
+
+--- @param self Console
+function Console:handleHeights()
+    print("heights: baseY= " .. self.hubState.baseY .. " highYDig=" .. self.hubState.highYDig .. " lowYDig=" .. self.hubState.lowYDig)
+    local line = read()
+    if not line then return end
+    local cmd = line:lower()
+    Console.parseXYZ(cmd)
+    local x, y, z = Console.parseXYZ(cmd)
+    if x == nil or y == nil or z == nil then return end
+    self.hubState.baseY = x
+    self.hubState.highYDig = y
+    self.hubState.lowYDig = z
+    print("heights: baseY= " .. self.hubState.baseY .. " highYDig=" .. self.hubState.highYDig .. " lowYDig=" .. self.hubState.lowYDig)
+end
+
 --- Main console loop
 --- @param self Console
 function Console:run()
@@ -447,14 +479,18 @@ function Console:run()
             self:handleFuel()
         elseif cmd == "cargo" then
             self:handleCargo()
-        elseif cmd:find("^assign%-drones%s") or cmd == "-ad" then
+        elseif cmd == "latency" then
+            self:handleLatency()
+        elseif cmd == "baseY / highYDig / lowYDig" then
+            self:handleHeights()
+        elseif cmd:find("^assign%-drones%s") then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n or n < 1 then
                 print("Wrong format! Example: assign-drones 2")
             else
                 self:handleAssignDrones(n)
             end
-        elseif cmd:find("^reset%-assignments$") or cmd == "-ra" then
+        elseif cmd:find("^reset%-assignments$") then
             self:handleResetAssignments()
         elseif cmd == "quit" or cmd == "exit" then
             if self:handleQuit() then

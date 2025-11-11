@@ -8,9 +8,19 @@
 --- @field turnRight fun(self: MoveService): boolean
 --- @field turnTo fun(self: MoveService, targetDir: number)
 --- @field moveHorizontal fun(self: MoveService, targetX: number, targetZ: number): boolean
+--- @field droneNet DroneNet
+--- @field moveTo fun(self: MoveService, target: Vec)
+--- @field startUpStatus fun(self: MoveService, message: Message)
+--- @field finishUpdate fun(self: MoveService, message: Message)
+--- @field currentDirection ECurrentDirection
+--- @field currentMoveState EMoveState
 
 local Vec = require("lib.vec")
 local GpsUtil = require("lib.gps_util")
+local DroneNet = require("drone.drone_net")
+local Message  = require("lib.net.msg")
+local EMoveState = require("lib.move_status_enum").EMoveState
+local ECurrentDirection = require("lib.move_status_enum").ECurrentDirection
 
 local MoveService = {}
 MoveService.__index = MoveService
@@ -20,6 +30,9 @@ MoveService.__index = MoveService
 function MoveService.new(droneState)
     local self = setmetatable({}, MoveService)
     self.droneState = droneState
+    self.droneNet = nil
+    self.currentDirection = ECurrentDirection.VERTICAL
+    self.currentDirection = EMoveState.WAIT
     return self
 end
 
@@ -88,8 +101,8 @@ function MoveService:calibrateDirection()
     local newDirection
 
     if     delta.z == -1 then newDirection = 0 -- (-Z)
-    elseif delta.x == 1  then newDirection = 1 -- (+X)
-    elseif delta.z == 1  then newDirection = 2 -- (+Z)
+    elseif delta.x ==  1 then newDirection = 1 -- (+X)
+    elseif delta.z ==  1 then newDirection = 2 -- (+Z)
     elseif delta.x == -1 then newDirection = 3 -- (-X)
     else
         print("Calibrating error. Invalid delta.")
@@ -183,6 +196,57 @@ function MoveService:moveHorizontal(targetX, targetZ)
 
     self.droneState:updatePosition()
     return true
+end
+
+--- @param self MoveService
+--- @param message Message
+function MoveService:startUpStatus(message)
+    local state = message.payload.state
+    local direction = message.payload.direction
+    self.currentMoveState = state
+    self.currentDirection = direction
+end
+
+--- @param self MoveService
+--- @param message Message
+function MoveService:finishUpdate(message)
+    if self.currentMoveState == EMoveState.FINISH_OUT then
+        return
+    end
+    local state = message.payload.state
+    local direction = message.payload.direction
+    self.currentMoveState = state
+    self.currentDirection = direction
+end
+
+--- @param self MoveService
+--- @param target Vec
+function MoveService:moveTo(target)
+    self.currentMoveState = EMoveState.WAIT
+    self.currentDirection = ECurrentDirection.VERTICAL
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+    while self.currentMoveState == EMoveState.WAIT do
+        sleep(1)
+    end
+    self:moveVertical(self.droneState.baseY + self.droneState.delta)
+    self.currentMoveState = EMoveState.FINISH
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
+        sleep(1)
+    end
+    self:moveHorizontal(target.x, target.z)
+    self.currentMoveState = EMoveState.FINISH
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
+        sleep(1)
+    end
+    self:moveVertical(target.y)
+    self.currentMoveState = EMoveState.FINISH_OUT
+    self.droneNet:sendToHub(Message.new(
+    "/hub/requests/drone/move/finish/down", "", self.droneState.id,{}))
 end
 
 return MoveService

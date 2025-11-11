@@ -9,7 +9,7 @@
 ---@field unassignDrone fun(self: HubState, droneId: integer)
 ---@field getAssignedRange fun(self: HubState, droneId: integer): ChunkWorkRange|nil
 ---@field getChunkProgress fun(self: HubState, chunkId: string): number
----@field registerDrone fun(self: HubState, droneId: integer)
+---@field registerDrone fun(self: HubState, droneId: integer): integer
 ---@field unregisterDrone fun(self: HubState, droneId: integer)
 ---@field containsDrone fun(self: HubState, droneId: integer): boolean
 ---@field rootChunk ChunkEntity|nil
@@ -17,18 +17,18 @@
 ---
 ---//////////////
 ---@field fuelPods FuelPod[]
----@field fuelQeueue ConcurrentQueue
+---@field fuelQueue ConcurrentQueue
 ---@field addFuelPod fun(self: HubState, pod: FuelPod)
 ---@field removeFuelPod fun(self: HubState, pod: FuelPod)
----@field subscribeDroneToFuelPod fun(self: HubState, pod: FuelPod, droneId: integer) : boolean
----@field unsubscribeDroneFromFuelPod fun(self: HubState, pod: FuelPod, droneId: integer)
+---@field subscribeDroneToFuelPod fun(self: HubState, droneId: integer) : Vec|nil
+---@field unsubscribeDroneFromFuelPod fun(self: HubState, droneId: integer)
 ---
 ---@field cargoPods CargoPod[]
----@field cargoQeueue ConcurrentQueue
+---@field cargoQueue ConcurrentQueue
 ---@field addCargoPod fun(self: HubState, pod: CargoPod)
 ---@field removeCargoPod fun(self: HubState, pod: CargoPod)
----@field subscribeDroneToCargoPod fun(self: HubState, pod: CargoPod, droneId: integer) : boolean
----@field unsubscribeDroneFromCargoPod fun(self: HubState, pod: CargoPod, droneId: integer)
+---@field subscribeDroneToCargoPod fun(self: HubState, droneId: integer) : Vec|nil
+---@field unsubscribeDroneFromCargoPod fun(self: HubState, droneId: integer)
 ---//////////////
 ---
 ---@field id integer
@@ -36,6 +36,27 @@
 ---@field getChunkId fun(self: HubState, chunkVec: Vec): string
 ---@field hasAssignedDrone fun(self: HubState, chunkId: string): boolean
 ---@field getCenterChunk fun(self: HubState): Vec|nil
+---//////////////
+--- drone move synchronization
+---@field movingUp         table<integer, EMoveState>  -- droneId → isOnFinish
+---@field movingDown       table<integer, EMoveState>  -- droneId → isOnFinish
+---@field movingHorizontal table<integer, EMoveState>  -- droneId → isOnFinish
+---@field currentDirection ECurrentDirection
+---
+---@field checkMoveVertical      fun(self: HubState): table<integer, EMoveState>|nil
+---@field checkMoveHorizontal    fun(self: HubState): table<integer, EMoveState>|nil
+---@field finishMoveUp           fun(self: HubState, droneId: integer): table<integer, EMoveState>|nil
+---@field finishMoveDown         fun(self: HubState, droneId: integer): table<integer, EMoveState>|nil
+---@field finishMoveHorizontal   fun(self: HubState, droneId: integer): table<integer, EMoveState>|nil
+---@field tryStartMoveUp         fun(self: HubState, droneId: integer): boolean
+---@field tryStartMoveDown       fun(self: HubState, droneId: integer): boolean
+---@field tryStartMoveHorizontal fun(self: HubState, droneId: integer): boolean
+---////////////
+---constants
+---@field latency  integer -- latency in seconds for starting drones
+---@field baseY    integer
+---@field highYDig integer
+---@field lowYDig  integer
 
 local gpsUtil = require("lib.gps_util")
 local ChunkWorkRange = require("hub.entities.chunk_work_range")
@@ -43,6 +64,8 @@ local ChunkEntity = require("hub.entities.chunk_entity")
 local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
 local FuelPod = require("hub.entities.inventory.fuel_pod")
 local CargoPod = require("hub.entities.inventory.cargo_pod")
+local EMoveState = require("lib.move_status_enum").EMoveState
+local ECurrentDirection = require("lib.move_status_enum").ECurrentDirection
 
 local HubState = {}
 HubState.__index = HubState
@@ -58,23 +81,232 @@ function HubState.new()
     self.rootChunk = nil
     self.fuelPods = {}
     self.cargoPods = {}
-    self.fuelQeueue = ConcurrentQueue.new()
-    self.cargoQeueue = ConcurrentQueue.new()
+    self.fuelQueue = ConcurrentQueue.new()
+    self.cargoQueue = ConcurrentQueue.new()
     self.id = os.getComputerID()
+    self.movingHorizontal = {}
+    self.movingUp = {}
+    self.movingDown = {}
+    self.currentDirection = ECurrentDirection.VERTICAL
+    self.latency = 0
+    self.baseY    = self.position.y
+    self.highYDig = self.baseY
+    self.lowYDig  = self.baseY - 10
     return self
+end
+
+
+--- @param self HubState
+--- @return table<integer, EMoveState>|nil
+function HubState:checkMoveVertical()
+--- @type table<integer, EMoveState>
+    local updatedIds = {}
+    local flag = false
+    -- check if all up moves are finished
+    for id, elem in pairs(self.movingUp) do
+        if elem == EMoveState.MOVE then
+            return nil
+        elseif elem == EMoveState.WAIT then
+            flag = true
+            updatedIds[id] = EMoveState.MOVE
+            self.movingUp[id] = EMoveState.MOVE
+        end
+    end
+    -- check if all down moves are finished
+    for id, elem in pairs(self.movingDown) do
+        if elem == EMoveState.MOVE then
+            return nil
+        elseif elem == EMoveState.WAIT then
+            flag = true
+            updatedIds[id] = EMoveState.MOVE
+            self.movingDown[id] = EMoveState.MOVE
+        end
+    end
+
+    if (flag) then
+        return updatedIds
+    end
+
+    -- if all drones already finished their moves
+    -- then switch to horizontal
+    -- and return updated ids...
+    self.currentDirection = ECurrentDirection.HORIZONTAL
+    for i, elem in pairs(self.movingUp) do
+        self.movingHorizontal[i] = EMoveState.MOVE
+        updatedIds[i] = EMoveState.MOVE
+    end
+    for i, elem in pairs(self.movingHorizontal) do
+        if self.movingHorizontal[i] == EMoveState.WAIT then
+            self.movingHorizontal[i] = EMoveState.MOVE
+            updatedIds[i] = EMoveState.MOVE
+        end
+    end
+    self.movingUp = {}
+    self.movingDown = {}
+    -- in the code that calls HubState:finishMove*() 
+    -- we will understand what type of messages must be sent 
+    -- by we known the direction
+    return updatedIds
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return table<integer, EMoveState>|nil
+function HubState:finishMoveUp(droneId)
+    if self.currentDirection == ECurrentDirection.VERTICAL then
+        if self.movingUp[droneId] then
+            self.movingUp[droneId] = EMoveState.FINISH
+            return self:checkMoveVertical()
+        else
+            print("WARNING: finishMoveUp: " .. droneId .. " not found!")
+            return nil
+        end
+    else
+        print("WARNING: finishMoveUp: currentDirection is not vertical!")
+        return nil
+    end
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return table<integer, EMoveState>|nil
+function HubState:finishMoveDown(droneId)
+    if self.currentDirection == ECurrentDirection.VERTICAL then
+        if self.movingDown[droneId] then
+            self.movingDown[droneId] = EMoveState.FINISH
+            return self:checkMoveVertical()
+        else
+            print("WARNING: finishMoveDown: " .. droneId .. " not found!")
+            return nil
+        end
+    else
+        print("WARNING: finishMoveUp: currentDirection is not vertical!")
+        return nil
+    end
+end
+
+--- @param self HubState
+--- @return table<integer, EMoveState>|nil
+function HubState:checkMoveHorizontal()
+    --- @type table<integer, EMoveState>
+    local updatedIds = {}
+    local flag = false
+    -- check if all up moves are finished, 
+    -- like in checkMoveVertical but for horizontal
+    for id, elem in pairs(self.movingHorizontal) do
+        if elem == EMoveState.MOVE then
+            return nil
+        elseif elem == EMoveState.WAIT then
+            flag = true
+            updatedIds[id] = EMoveState.MOVE
+            self.movingHorizontal[id] = EMoveState.MOVE
+        end
+    end
+
+    if (flag) then
+        return updatedIds
+    end
+
+    -- if all drones already finished their moves
+    -- then switch to vertical
+    -- and return updated ids...
+    self.currentDirection = ECurrentDirection.VERTICAL
+    for i, elem in pairs(self.movingHorizontal) do
+        self.movingDown[i] = EMoveState.MOVE
+        updatedIds[i] = EMoveState.MOVE
+    end
+    for i, elem in pairs(self.movingDown) do
+        if self.movingDown[i] == EMoveState.WAIT then
+            self.movingDown[i] = EMoveState.MOVE
+            updatedIds[i] = EMoveState.MOVE
+        end
+    end
+    for i, elem in pairs(self.movingUp) do
+        if self.movingUp[i] == EMoveState.WAIT then
+            self.movingUp[i] = EMoveState.MOVE
+            updatedIds[i] = EMoveState.MOVE
+        end
+    end
+    self.movingHorizontal = {}
+    -- in the code that calls HubState:finishMove*() 
+    -- we will understand what type of messages must be sent 
+    -- by we known the direction
+    return updatedIds
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return table<integer, EMoveState>|nil
+function HubState:finishMoveHorizontal(droneId)
+    if self.currentDirection == ECurrentDirection.HORIZONTAL then
+        if self.movingHorizontal[droneId] then
+            self.movingHorizontal[droneId] = EMoveState.FINISH
+            return self:checkMoveHorizontal()
+        else
+            print("WARNING: finishMoveHorizontal: " .. droneId .. " not found!")
+            return nil
+        end
+    else
+        print("WARNING: finishMoveHorizontal: currentDirection is not horizontal!")
+        return nil
+    end
 end
 
 --- @param self HubState
 --- @param droneId integer
 --- @return boolean
+function HubState:tryStartMoveUp(droneId)
+    if self.currentDirection == ECurrentDirection.VERTICAL then
+        self.movingUp[droneId] = EMoveState.MOVE
+        return true
+    elseif self.currentDirection == ECurrentDirection.HORIZONTAL then
+        self.movingUp[droneId] = EMoveState.WAIT
+        return false
+    end
+    return false
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return boolean
+function HubState:tryStartMoveDown(droneId)
+    if self.currentDirection == ECurrentDirection.VERTICAL then
+        self.movingDown[droneId] = EMoveState.MOVE
+        return true
+    elseif self.currentDirection == ECurrentDirection.HORIZONTAL then
+        self.movingUp[droneId] = EMoveState.WAIT
+        return false
+    end
+    return false
+end
+
+--- @param self HubState
+--- @param droneId integer
+--- @return boolean
+function HubState:tryStartMoveHorizontal(droneId)
+    if self.currentDirection == ECurrentDirection.HORIZONTAL then
+        self.movingHorizontal[droneId] = EMoveState.MOVE
+        return true
+    elseif self.currentDirection == ECurrentDirection.VERTICAL then
+        self.movingHorizontal[droneId] = EMoveState.WAIT
+        return false
+    end
+    return false
+end
+
+
+--- @param self HubState
+--- @param droneId integer
+--- @return Vec|nil
 function HubState:subscribeDroneToFuelPod(droneId)
     for _, pod in pairs(self.fuelPods) do
         if pod.isOccupied == false then
-            return pod:subscribeDrone(droneId)
+            if(pod:subscribeDrone(droneId)) then
+                return pod.position
+            end
         end
     end
-    self.fuelQeueue:push(droneId)
-    return false
+    return nil
 end
 
 --- @param self HubState
@@ -122,15 +354,16 @@ end
 
 --- @param self HubState
 --- @param droneId integer
---- @return boolean
+--- @return Vec|nil
 function HubState:subscribeDroneToCargoPod(droneId)
     for _, pod in pairs(self.cargoPods) do
         if pod.isOccupied == false then
-            return pod:subscribeDrone(droneId)
+            if(pod:subscribeDrone(droneId)) then
+                return pod.position
+            end
         end
     end
-    self.cargoQeueue:push(droneId)
-    return false
+    return nil
 end
 
 --- @param self HubState
@@ -151,8 +384,11 @@ end
 
 --- Registers a drone in the hub state
 ---@param droneId integer
+---@return integer
 function HubState:registerDrone(droneId)
     table.insert(self.drones, droneId)
+    local delta = #self.drones
+    return delta
 end
 
 --- Unregisters a drone from the hub state
