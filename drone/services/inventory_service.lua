@@ -1,4 +1,3 @@
-local DroneNet = require "drone.drone_net"
 local Message = require("lib.net.msg")
 
 --- @class InventoryService
@@ -67,9 +66,10 @@ end
 
 
 --- @param droneState DroneState
-function InventoryService.requestUnloading(droneState)
+--- @param droneNet DroneNet
+function InventoryService.requestUnloading(droneState, droneNet)
     droneState:setWaitingForUnloading(true)
-    DroneNet.send(droneState:getHubId(), Message.new("/hub/requests/drone/unload", "/drone/unload-approved", droneState:getId(), {}))
+    droneNet.send(droneState:getHubId(), Message.new("/hub/requests/drone/unload", "/drone/unload-approved", droneState:getId(), {}))
 end
 
 --- @param droneState DroneState
@@ -80,9 +80,10 @@ function InventoryService.unloadApproved(droneState, message)
 end
 
 --- @param droneState DroneState
-function InventoryService.requestRefueling(droneState)
+--- @param droneNet DroneNet
+function InventoryService.requestRefueling(droneState, droneNet)
     droneState:setWaitingForRefueling(true)
-    DroneNet.send(droneState:getHubId(), Message.new("/hub/requests/drone/refuel", "/drone/fuel-approved", droneState:getId(), {}))
+    droneNet.send(droneState:getHubId(), Message.new("/hub/requests/drone/refuel", "/drone/fuel-approved", droneState:getId(), {}))
 end
 
 --- @param droneState DroneState
@@ -93,8 +94,9 @@ function InventoryService.refuelApproved(droneState, message)
 end
 
 --- @param droneState DroneState
-function InventoryService.processInventoryUnloadRelease(droneState)
-    DroneNet.send(droneState:getHubId(), Message.new(
+--- @param droneNet DroneNet
+function InventoryService.processInventoryUnloadRelease(droneState, droneNet)
+    droneNet.send(droneState:getHubId(), Message.new(
         "/hub/requests/drone/unload/release",
         "",
         droneState.id,
@@ -103,8 +105,9 @@ function InventoryService.processInventoryUnloadRelease(droneState)
 end
 
 --- @param droneState DroneState
-function InventoryService.processRefuelRelease(droneState)
-    DroneNet.send(droneState:getHubId(), Message.new(
+--- @param droneNet DroneNet
+function InventoryService.processRefuelRelease(droneState, droneNet)
+    droneNet.send(droneState:getHubId(), Message.new(
         "/hub/requests/drone/refuel/release",
         "",
         droneState.id,

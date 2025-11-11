@@ -12,21 +12,22 @@ local EDroneTask = require "lib.drone_tasks_enum"
 
 local Drone = {}
 Drone.__index = Drone
-local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
-
-local droneState = require("drone.drone_state").new()
-local moveService = require("drone.services.move_service").new(droneState)
-local registryService = require("drone.services.registry_service").new(droneState, moveService)
-local droneNet = require("drone.drone_net").new(droneState, registryService)
-droneNet.moveService = moveService
-droneNet:init()
-moveService.droneNet = droneNet
-
-
-
-local miningService = require("drone.services.mining_service").new(droneState, moveService)
 
 function Drone.new()
+    local ConcurrentQueue = require("lib.concurrent.concurrent_queue")
+    
+    local droneState = require("drone.drone_state").new()
+    local moveService = require("drone.services.move_service").new(droneState)
+    local registryService = require("drone.services.registry_service").new(droneState, moveService)
+    local droneNet = require("drone.drone_net").new(droneState, registryService, moveService)
+    
+    -- Set up circular dependencies after all objects are created
+    droneNet.moveService = moveService
+    droneNet:init()
+    moveService.droneNet = droneNet
+    
+    local miningService = require("drone.services.mining_service").new(droneState, moveService)
+    
     local self = setmetatable({}, Drone)
     self.droneState = droneState
     self.moveService = moveService
@@ -72,7 +73,7 @@ function Drone:processCurrentAction()
     while true do
         if self.droneState.currentTask == EDroneTask.IDLE then
         elseif self.droneState.currentTask == EDroneTask.TEST_MOVE then
-            moveService:moveTest()
+            self.moveService:moveTest()
             self.droneState.currentTask = EDroneTask.IDLE
         elseif self.droneState.currentTask == EDroneTask.MINING then
         end

@@ -11,7 +11,6 @@
 
 local router = require("lib.net.router").new()
 local msg    = require("lib.net.msg")
-local InventoryService = require("drone.services.inventory_service")
 local EDroneTask       = require("lib.drone_tasks_enum")
 
 local DroneNet = {}
@@ -51,9 +50,11 @@ function DroneNet:init()
     end)
 -------------------------------------------------------------------------
     router:registerRoute("/drone/unload-approved", function(message)
+        local InventoryService = require("drone.services.inventory_service")
         InventoryService.unloadApproved(self.droneState, message)
     end)
     router:registerRoute("/drone/fuel-approved", function(message)
+        local InventoryService = require("drone.services.inventory_service")
         InventoryService.refuelApproved(self.droneState, message)
     end)
     -- router:registerRoute("/drone/pod-unsubscribe-approved", function(message)

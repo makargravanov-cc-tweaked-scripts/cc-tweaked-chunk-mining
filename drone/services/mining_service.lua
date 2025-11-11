@@ -9,7 +9,7 @@
 local GpsUtil = require("lib.gps_util")
 local InventoryService = require("drone.services.inventory_service")
 local Vec              = require("lib.vec")
-local FuelService      = require("drone.services.fuel_ervice")
+local FuelService      = require("drone.services.fuel_service")
 
 local MiningService = {}
 MiningService.__index = MiningService

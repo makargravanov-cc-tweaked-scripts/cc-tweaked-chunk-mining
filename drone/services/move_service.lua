@@ -19,7 +19,6 @@
 
 local Vec = require("lib.vec")
 local GpsUtil = require("lib.gps_util")
-local DroneNet = require("drone.drone_net")
 local Message  = require("lib.net.msg")
 local EMoveState = require("lib.move_status_enum").EMoveState
 local ECurrentDirection = require("lib.move_status_enum").ECurrentDirection
