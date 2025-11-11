@@ -11,6 +11,7 @@ local presets = {
         "lib/drone_tasks_enum.lua",
         "lib/concurrent/concurrent_queue.lua",
         "lib/concurrent/concurrent_state.lua",
+        "lib/move_status_enum.lua",
         "lib/net/router.lua",
         "lib/net/msg.lua",
     },
