@@ -23,7 +23,7 @@ function Hub.new(hubState, droneService)
     local self = setmetatable({}, Hub)
     self.hubState = hubState
     self.droneService = droneService
-    self.hubNet = require("hub/hub_net").new(droneService)
+    self.hubNet = require("hub.hub_net").new(droneService)
     self.hubNet:init()
     self.msgQueue = ConcurrentQueue.new()
     return self

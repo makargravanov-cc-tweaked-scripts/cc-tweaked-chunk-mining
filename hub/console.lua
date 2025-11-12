@@ -30,12 +30,15 @@
 --- @field handleLatency  fun(self: Console)
 --- @field handleHeights  fun(self: Console)
 --- @field handleTestMove fun(self: Console)
+--- @
+--- @field handleStartMining fun(self: Console)
+--- @field handleStopMining fun(self: Console)
 
 local FuelPod = require("hub.entities.inventory.fuel_pod")
 local CargoPod = require("hub.entities.inventory.cargo_pod")
 local ChunkWorkRange = require("hub.entities.chunk_work_range")
 local Vec            = require("lib.vec")
-local HubNet        = require("hub.hub_net")
+local HubNet         = require("hub.hub_net")
 local Message = require("lib.net.msg")
 local Console = {}
 Console.__index = Console
@@ -69,8 +72,11 @@ function Console:handleHelp()
     print("  reset-assignments - Reset all assignments and chunk ranges")
     print("  fuel              - Manage fuel pods")
     print("  cargo             - Manage cargo pods")
-    print("  latency           - Set/check hub network latency")
-    print("  baseY/highYDig/lowYDig - Set excavation heights (`x y z` syntax)")
+    print("  latency           - mining latency, num of parallel started")
+    print("  heights           - Set excavation heights (`x y z` syntax)")
+    print("  test-move         - Test movement commands")
+    print("  mining            - Start mining")
+    print("  stop              - Stop mining")
     print("  quit/exit         - Exit console")
 end
 
@@ -435,15 +441,19 @@ end
 
 --- @param self Console
 function Console:handleLatency()
-    print("Latency: " .. self.hubState.latency .. "s")
-    print("write 3 nubers but 2nd and 3rd will ignore")
+    print("Latency: " .. self.hubState.latency .. "s", "Parallel started drones number: " .. self.hubState.parallelStartedDronesNumber)
+    print("write 3 nubers but 3rd will ignore")
     local line = read()
     if not line then return end
     local cmd = line:lower()
     Console.parseXYZ(cmd)
     local x, y, z = Console.parseXYZ(cmd)
     if x == nil then return end
+    if y == nil then return end
+    if x < 0 then x = 0 end
+    if y < 1 then y = 1 end
     self.hubState.latency = x
+    self.hubState.parallelStartedDronesNumber = y
     print("Latency: " .. self.hubState.latency .. "s")
 end
 
@@ -465,6 +475,7 @@ end
 --- @param self Console
 function Console:handleTestMove()
     print("Start coordinates for assigned drone ranges:")
+
     for droneId, assignment in pairs(self.hubState.droneAssignment) do
         local chunkId = assignment.chunkId
         local rangeIndex = assignment.rangeIndex
@@ -474,7 +485,10 @@ function Console:handleTestMove()
             print(string.format("Drone %s: NO RANGE", tostring(droneId)))
             goto continue
         end
-        local chunkX, chunkZ = tonumber(chunkId:match("^([%-]?%d+),([%-]?%d+)$"))
+        local chunkX, chunkZ = chunkId:match("^([%-]?%d+),([%-]?%d+)$")
+        chunkX = tonumber(chunkX)
+        chunkZ = tonumber(chunkZ)
+
         if not chunkX or not chunkZ then
             print(string.format("Drone %s: BAD CHUNKID %s", tostring(droneId), chunkId))
             goto continue
@@ -500,6 +514,7 @@ function Console:handleTestMove()
                     position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z)
                 }
             ))
+
         else
             print(string.format("Drone %s: FAILED TO CALC GLOBAL COORDS", tostring(droneId)))
         end
@@ -507,6 +522,98 @@ function Console:handleTestMove()
     end
 end
 
+--- @param self Console
+function Console:handleStartMining()
+    local N = self.hubState.parallelStartedDronesNumber
+    local epsilon = self.hubState.latency or 0
+
+    if not N or N < 1 then
+        N = 0
+    end
+
+    local startedCount = 0
+    print("Start coordinates for assigned drone ranges:")
+
+    local droneIds = {}
+    for droneId in pairs(self.hubState.droneAssignment) do
+        table.insert(droneIds, droneId)
+    end
+    table.sort(droneIds)
+
+    local totalDrones = #droneIds
+
+    for i, droneId in ipairs(droneIds) do
+        local assignment = self.hubState.droneAssignment[droneId]
+        local chunkId = assignment.chunkId
+        local rangeIndex = assignment.rangeIndex
+        local ranges = self.hubState.chunkWorkMap[chunkId]
+        local range = ranges and ranges[rangeIndex]
+
+        if not range then
+            print(string.format("Drone %s: NO RANGE", tostring(droneId)))
+            goto continue
+        end
+
+        local chunkX, chunkZ = chunkId:match("^([%-]?%d+),([%-]?%d+)$")
+        chunkX = tonumber(chunkX)
+        chunkZ = tonumber(chunkZ)
+
+        if not chunkX or not chunkZ then
+            print(string.format("Drone %s: BAD CHUNKID %s", tostring(droneId), chunkId))
+            goto continue
+        end
+
+        local chunkVec = Vec.new(chunkX, 0, chunkZ)
+        local startPos = require("lib.gps_util").nthBlockGlobal(chunkVec, range.from, true)
+
+        if startPos then
+            print(
+                string.format(
+                    "Drone %s: Chunk %s | Range %d | Start XYZ: %d %d %d (from=%d to=%d)",
+                    tostring(droneId),
+                    chunkId,
+                    rangeIndex,
+                    startPos.x, startPos.y, startPos.z,
+                    range.from, range.to
+                )
+            )
+
+            HubNet.send(droneId, Message.new(
+                "/drone/start/mining",
+                "",
+                self.hubState.id,
+                {
+                    position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z),
+                    rangeFrom = range.from,
+                    rangeTo = range.to
+                }
+            ))
+
+            startedCount = startedCount + 1
+
+            if N > 0 and startedCount % N == 0 and i < totalDrones then
+                os.sleep(epsilon)
+            end
+        else
+            print(string.format("Drone %s: FAILED TO CALC GLOBAL COORDS", tostring(droneId)))
+        end
+
+        ::continue::
+    end
+end
+
+
+--- @param self Console
+function Console:handleStopMining()
+    for droneId in pairs(self.hubState.droneAssignment) do
+        HubNet.send(droneId, Message.new(
+            "/drone/stop/mining",
+            "",
+            self.hubState.id,
+            {}
+        ))
+    end
+end
 --- Main console loop
 --- @param self Console
 function Console:run()
@@ -533,12 +640,16 @@ function Console:run()
             self:handleFuel()
         elseif cmd == "cargo" then
             self:handleCargo()
-        elseif cmd == "latency" then
+        elseif cmd == "latency-numbers" then
             self:handleLatency()
-        elseif cmd == "baseY/highYDig/lowYDig" then
+        elseif cmd == "heights" then
             self:handleHeights()
         elseif cmd == "test-move" then
             self:handleTestMove()
+        elseif cmd == "mining" then
+            self:handleStartMining()
+        elseif cmd == "stop" then
+            self:handleStopMining()
         elseif cmd:find("^assign%-drones%s") then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n or n < 1 then

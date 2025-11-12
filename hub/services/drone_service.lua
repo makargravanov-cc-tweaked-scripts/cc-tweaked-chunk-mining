@@ -18,8 +18,8 @@
 --- @field processFinishHorizontal fun(self: DroneService, msg: Message)
 --- @field processFinishDown fun(self: DroneService, msg: Message)
 
-local HubState = require("hub/hub_state")
-local HubNetwork = require("hub/hub_net")
+local HubState = require("hub.hub_state")
+local HubNetwork = require("hub.hub_net")
 local Message = require("lib.net.msg")
 
 local EMoveState = require("lib.move_status_enum").EMoveState

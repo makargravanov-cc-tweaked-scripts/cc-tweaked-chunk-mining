@@ -57,6 +57,7 @@
 ---@field baseY    integer
 ---@field highYDig integer
 ---@field lowYDig  integer
+---@field parallelStartedDronesNumber integer
 
 local gpsUtil = require("lib.gps_util")
 local ChunkWorkRange = require("hub.entities.chunk_work_range")
@@ -92,6 +93,7 @@ function HubState.new()
     self.baseY    = self.position.y
     self.highYDig = self.baseY
     self.lowYDig  = self.baseY - 10
+    self.parallelStartedDronesNumber = 1
     return self
 end
 

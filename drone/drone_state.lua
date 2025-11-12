@@ -30,10 +30,12 @@
 ---@field refuelingPosition Vec
 ---@field setRefuelingPosition fun(self: DroneState, position: Vec)
 ---@
----@field baseY      integer
----@field highYDig   integer
----@field lowYDig    integer
----@field delta      integer
+---@field baseY       integer
+---@field highYDig    integer
+---@field lowYDig     integer
+---@field delta       integer
+---@field startNumber integer
+---@field targetNumber integer
 ---@field initialPos Vec
 
 local DroneState = {}
@@ -58,7 +60,9 @@ function DroneState.new()
                                highYDig = 0,
                                lowYDig = 0,
                                delta = 0,
-                               initialPos = GpsUtil.position()
+                               initialPos = GpsUtil.position(),
+                               startNumber = 0,
+                               targetNumber = 0
                               }, DroneState)
     self.currentTask = EDroneTask.IDLE
     return self

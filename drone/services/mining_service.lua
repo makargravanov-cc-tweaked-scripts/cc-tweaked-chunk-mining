@@ -4,12 +4,14 @@
 --- @field moveService MoveService
 --- @field new fun(droneState: DroneState, moveService: MoveService): MiningService
 --- @field startMining fun(self: MiningService, startNumber: integer, targetNumber: integer, fromY: integer, toY: integer)
---- @field mineColumn fun(self: MiningService, upperY: integer, lowerY: integer)
+--- @field mineColumn fun(self: MiningService, upperY: integer, lowerY: integer) : boolean
+--- @field mining fun(self: MiningService)
 
 local GpsUtil = require("lib.gps_util")
 local InventoryService = require("drone.services.inventory_service")
 local Vec              = require("lib.vec")
 local FuelService      = require("drone.services.fuel_service")
+local EDroneTask       = require("lib.drone_tasks_enum")
 
 local MiningService = {}
 MiningService.__index = MiningService
@@ -60,7 +62,13 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
         if not self.moveService:moveHorizontal(colGlobal.x, colGlobal.z) then
             error("Failed to move to column X=" .. tostring(colGlobal.x) .. " Z=" .. tostring(colGlobal.z) .. " (index " .. tostring(idx) .. ")")
         end
-        self:mineColumn(upperY, lowerY)
+        if self.droneState.currentTask ~= EDroneTask.MINING then
+            return
+        end
+        local isCompleted = self:mineColumn(upperY, lowerY)
+        if not isCompleted then
+            return
+        end
         self.droneState:updatePosition()
 
         InventoryService.dropSelectedItemsDown()
@@ -71,7 +79,7 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
 
         if freeSlots <= 4 then
             print("Need to unload inventory")
-            InventoryService.requestUnloading(self.droneState)
+            InventoryService.requestUnloading(self.droneState, self.moveService.droneNet)
             while self.droneState.waitingForUnloading do
                 os.sleep(1)
             end
@@ -82,13 +90,13 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
             self.moveService:moveTo(unloadingPosition)
             InventoryService.dropAllItemsDown()
             self.moveService:moveToWithFunction(lastPosition, function ()
-                InventoryService.processInventoryUnloadRelease(self.droneState)
+                InventoryService.processInventoryUnloadRelease(self.droneState, self.moveService.droneNet)
             end)
         end
 
         if FuelService.getFuelLevel() <= 2500 then
             print("Need to refuel")
-            InventoryService.requestRefueling(self.droneState)
+            InventoryService.requestRefueling(self.droneState, self.moveService.droneNet)
             while self.droneState.waitingForRefueling do
                 os.sleep(1)
             end
@@ -97,9 +105,11 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
                 error("RefuellingPosition position not set")
             end
             self.moveService:moveTo(refuellingPosition)
-            FuelService.refuelFromBiomassBlockChest()
+            for i = 1, 10, 1 do
+                FuelService.refuelFromBiomassBlockChest()
+            end
             self.moveService:moveToWithFunction(lastPosition, function ()
-                InventoryService.processRefuelRelease(self.droneState)
+                InventoryService.processRefuelRelease(self.droneState, self.moveService.droneNet)
             end)
         end
     end
@@ -108,11 +118,15 @@ end
 --- @param self MiningService
 --- @param upperY integer 
 --- @param lowerY integer 
+--- @return boolean
 function MiningService:mineColumn(upperY, lowerY)
     self.droneState:updatePosition()
     local pos = self.droneState:getPosition()
 
     for y = pos.y - 1, lowerY, -1 do
+        if self.droneState.currentTask ~= EDroneTask.MINING then
+            return false
+        end
         local hasBlock, data = turtle.inspectDown()
 
         if hasBlock then
@@ -144,7 +158,15 @@ function MiningService:mineColumn(upperY, lowerY)
     end
 
     self.droneState:updatePosition()
+
+    return true
 end
 
+--- @param self MiningService
+function MiningService:mining()
+    self.moveService:moveTo(self.droneState.targetPosition)
+    self:startMining(self.droneState.startNumber, self.droneState.targetNumber, self.droneState.highYDig, self.droneState.lowYDig)
+    self.moveService:moveTo(self.droneState.initialPos)
+end
 
 return MiningService

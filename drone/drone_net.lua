@@ -45,8 +45,21 @@ function DroneNet:init()
         self.droneState:setTargetPosition(pos)
         self.droneState.currentTask = EDroneTask.TEST_MOVE
     end)
-    router:registerRoute("/drone/mining", function(message)
-    --- NOT IMPLEMENTED
+    router:registerRoute("/drone/start/mining", function(message)
+        ---@type Vec
+        local pos = message.payload.position
+        ---@type integer
+        local rangeFrom = message.payload.rangeFrom
+        ---@type integer
+        local rangeTo   = message.payload.rangeTo
+        self.droneState:setTargetPosition(pos)
+        self.droneState.startNumber = rangeFrom
+        self.droneState.targetNumber = rangeTo
+
+        self.droneState.currentTask = EDroneTask.MINING
+    end)
+    router:registerRoute("/drone/stop/mining", function(message)
+        self.droneState.currentTask = EDroneTask.STOP
     end)
 -------------------------------------------------------------------------
     router:registerRoute("/drone/unload-approved", function(message)
