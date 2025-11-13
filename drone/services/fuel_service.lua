@@ -22,25 +22,21 @@ function FuelService.refuelFromBiomassBlockChest()
         error("Chest not found")
     end
 
-
-    for slot, detail in pairs(chest.list()) do
-        if detail.name == "createaddition:biomass_pellet_block" then
-            local turtleFreeSlot = nil
-            for i = 1, 16 do
-                if turtle.getItemCount(i) == 0 then
-                    turtleFreeSlot = i
-                    break
-                end
-            end
-            if not turtleFreeSlot then
-                error("No free slots")
-            end
-            turtle.select(turtleFreeSlot)
-            turtle.suckDown(1)
-            turtle.refuel(1)
+    local turtleFreeSlot = nil
+    for i = 1, 16 do
+        if turtle.getItemCount(i) == 0 then
+            turtleFreeSlot = i
+            break
         end
     end
-    return false
+    if not turtleFreeSlot then
+        error("No free slots")
+    end
+    turtle.select(turtleFreeSlot)
+    turtle.suckDown(1)
+    turtle.refuel(1)
+    return true
+
 end
 
 
