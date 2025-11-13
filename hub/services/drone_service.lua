@@ -21,6 +21,7 @@
 local HubState = require("hub.hub_state")
 local HubNetwork = require("hub.hub_net")
 local Message = require("lib.net.msg")
+local Vec     = require("lib.vec")
 
 local EMoveState = require("lib.move_status_enum").EMoveState
 local ECurrentDirection = require("lib.move_status_enum").ECurrentDirection
@@ -55,11 +56,12 @@ end
 function DroneService:processInventoryUnload(msg)
     local unloadingPosition = self.hubState:subscribeDroneToCargoPod(msg.callbackId)
     if unloadingPosition then
-        unloadingPosition.y = unloadingPosition.y + 1
+        local copy = Vec.copy(unloadingPosition)
+        copy.y = copy.y + 1
         local unloadMsg = Message.new("/drone/unload-approved",
         "",
         self.hubState.id, {
-            unloadingPosition = unloadingPosition
+            unloadingPosition = copy
         })
         HubNetwork.send(msg.callbackId, unloadMsg)
     else
@@ -99,11 +101,12 @@ end
 function DroneService:processFuelLoad(msg)
     local fuelPosition = self.hubState:subscribeDroneToFuelPod(msg.callbackId)
     if fuelPosition then
-        fuelPosition.y = fuelPosition.y + 1
+        local copy = Vec.copy(fuelPosition)
+        copy.y = copy.y + 1
         local unloadMsg = Message.new("/drone/fuel-approved",
         "",
         self.hubState.id, {
-            fuelPosition = fuelPosition
+            fuelPosition = copy
         })
         HubNetwork.send(msg.callbackId, unloadMsg)
     else

@@ -161,7 +161,12 @@ function MiningService:mineColumn(upperY, lowerY)
         local diff = upperY - currentPos.y
         for _ = 1, diff do
             if not turtle.up() then
-                print("Error ascending to Y=" .. upperY)
+                turtle.digUp()
+                if not turtle.up() then
+                    if not turtle.back() then
+                        print("Error ascending to Y=" .. upperY)
+                    end
+                end
                 break
             end
         end
