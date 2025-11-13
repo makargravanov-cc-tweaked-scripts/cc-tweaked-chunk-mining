@@ -205,12 +205,16 @@ end
 --- @param message Message
 function DroneService:processStartUp(message)
     print("processStartUp")
+    print("currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:tryStartMoveUp(message.callbackId)
+    print("currentDirection: " .. self.hubState.currentDirection)
     local state
     if result then
         state = EMoveState.MOVE
+        print("MOVE")
     else
         state = EMoveState.WAIT
+        print("WAIT")
     end
     HubNetwork.send(message.callbackId, Message.new(
         "/drone/move/start/up/status",
@@ -227,9 +231,12 @@ end
 --- @param message Message
 function DroneService:processFinishUp(message)
     print("processFinishUp")
+    print("currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveUp(message.callbackId)
+    print("currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
+           print("status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
@@ -247,9 +254,12 @@ end
 --- @param message Message
 function DroneService:processFinishHorizontal(message)
     print("processFinishHorizontal")
+    print("currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveHorizontal(message.callbackId)
+    print("currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
+           print("status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
@@ -267,9 +277,12 @@ end
 --- @param message Message
 function DroneService:processFinishDown(message)
     print("processFinishDown")
+    print("currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveDown(message.callbackId)
+    print("currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
+           print("status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
