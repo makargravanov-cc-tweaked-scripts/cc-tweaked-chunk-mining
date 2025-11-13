@@ -79,11 +79,13 @@ function DroneService:checkUnloadingQueue()
         if queuedMsg then
             local unloadingPosition = self.hubState:subscribeDroneToCargoPod(queuedMsg.callbackId)
             if unloadingPosition then
+                local copy = Vec.copy(unloadingPosition)
+                copy.y = copy.y + 1
                 self.hubState.cargoQueue:pull()
                 local unloadMsg = Message.new("/drone/unload-approved",
                 "",
                 self.hubState.id, {
-                    unloadingPosition = unloadingPosition
+                    unloadingPosition = copy
                 })
                 HubNetwork.send(queuedMsg.callbackId, unloadMsg)
                 print("Processed queued unloading request for drone " .. queuedMsg.callbackId)
@@ -125,11 +127,13 @@ function DroneService:checkFuelQueue()
         if queuedMsg then
             local fuelPosition = self.hubState:subscribeDroneToFuelPod(queuedMsg.callbackId)
             if fuelPosition then
+                local copy = Vec.copy(fuelPosition)
+                copy.y = copy.y + 1
                 self.hubState.fuelQueue:pull()
                 local unloadMsg = Message.new("/drone/fuel-approved",
                 "",
                 self.hubState.id, {
-                    fuelPosition = fuelPosition
+                    fuelPosition = copy
                 })
                 HubNetwork.send(queuedMsg.callbackId, unloadMsg)
                 print("Processed queued fuel request for drone " .. queuedMsg.callbackId)

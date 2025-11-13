@@ -89,7 +89,7 @@ end
 --- @param droneState DroneState
 --- @param message Message
 function InventoryService.refuelApproved(droneState, message)
-    droneState:setTargetPosition(message.payload.unloadingPosition)
+    droneState:setTargetPosition(message.payload.fuelPosition)
     droneState:setWaitingForRefueling(false)
 end
 
