@@ -206,6 +206,7 @@ function MoveService:startUpStatus(message)
     local direction = message.payload.direction
     self.currentMoveState = state
     self.currentDirection = direction
+    print("Move state: " .. state .. ", direction: " .. direction)
 end
 
 --- @param self MoveService
