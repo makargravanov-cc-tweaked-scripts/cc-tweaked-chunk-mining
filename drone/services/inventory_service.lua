@@ -69,7 +69,7 @@ end
 --- @param droneNet DroneNet
 function InventoryService.requestUnloading(droneState, droneNet)
     droneState:setWaitingForUnloading(true)
-    droneNet:send(droneState:getHubId(), Message.new("/hub/requests/drone/unload", "/drone/unload-approved", droneState:getId(), {}))
+    droneNet:sendToHub(Message.new("/hub/requests/drone/unload", "/drone/unload-approved", droneState:getId(), {}))
 end
 
 --- @param droneState DroneState
@@ -83,7 +83,7 @@ end
 --- @param droneNet DroneNet
 function InventoryService.requestRefueling(droneState, droneNet)
     droneState:setWaitingForRefueling(true)
-    droneNet:send(droneState:getHubId(), Message.new("/hub/requests/drone/refuel", "/drone/fuel-approved", droneState:getId(), {}))
+    droneNet:sendToHub(Message.new("/hub/requests/drone/refuel", "/drone/fuel-approved", droneState:getId(), {}))
 end
 
 --- @param droneState DroneState
@@ -96,7 +96,7 @@ end
 --- @param droneState DroneState
 --- @param droneNet DroneNet
 function InventoryService.processInventoryUnloadRelease(droneState, droneNet)
-    droneNet:send(droneState:getHubId(), Message.new(
+    droneNet:sendToHub(Message.new(
         "/hub/requests/drone/unload/release",
         "",
         droneState.id,
@@ -107,7 +107,7 @@ end
 --- @param droneState DroneState
 --- @param droneNet DroneNet
 function InventoryService.processRefuelRelease(droneState, droneNet)
-    droneNet:send(droneState:getHubId(), Message.new(
+    droneNet:sendToHub(Message.new(
         "/hub/requests/drone/refuel/release",
         "",
         droneState.id,
