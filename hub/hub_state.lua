@@ -206,6 +206,7 @@ function HubState:checkMoveHorizontal()
     end
 
     if (flag) then
+        print("checkMoveHorizontal: flag is true")
         return updatedIds
     end
 
@@ -213,23 +214,32 @@ function HubState:checkMoveHorizontal()
     -- then switch to vertical
     -- and return updated ids...
     self.currentDirection = ECurrentDirection.VERTICAL
+
+    local counter1 = 0
+    local counter2 = 0
+    local counter3 = 0
+
     for i, elem in pairs(self.movingHorizontal) do
         self.movingDown[i] = EMoveState.MOVE
         updatedIds[i] = EMoveState.MOVE
+        counter1 = counter1 + 1
     end
     for i, elem in pairs(self.movingDown) do
         if self.movingDown[i] == EMoveState.WAIT then
             self.movingDown[i] = EMoveState.MOVE
             updatedIds[i] = EMoveState.MOVE
+            counter2 = counter2 + 1
         end
     end
     for i, elem in pairs(self.movingUp) do
         if self.movingUp[i] == EMoveState.WAIT then
             self.movingUp[i] = EMoveState.MOVE
             updatedIds[i] = EMoveState.MOVE
+            counter3 = counter3 + 1
         end
     end
     self.movingHorizontal = {}
+    print("checkMoveHorizontal: " .. counter1 .. " " .. counter2 .. " " .. counter3)        
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
