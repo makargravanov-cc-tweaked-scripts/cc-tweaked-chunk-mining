@@ -8,7 +8,7 @@ InventoryService.__index = InventoryService
 
 local itemsToDrop = {
     ["minecraft:flint"] = true,
-    ["minecraft:deepslate"] = true
+    ["minecraft:cobbled_deepslate"] = true
 }
 
 function InventoryService.dropSelectedItemsDown()

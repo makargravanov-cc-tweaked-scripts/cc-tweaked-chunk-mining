@@ -68,6 +68,18 @@ function DroneState.new()
     return self
 end
 
+-- @param self DroneState
+-- @param waitingForUnloading boolean
+function DroneState:waitingForUnloading(waitingForUnloading)
+    self.waitingForUnloading = waitingForUnloading
+end
+
+-- @param self DroneState
+-- @param waitingForRefueling boolean
+function DroneState:waitingForRefueling(waitingForRefueling)
+    self.waitingForRefueling = waitingForRefueling
+end
+
 --- 
 --- @param self DroneState
 --- @param position Vec

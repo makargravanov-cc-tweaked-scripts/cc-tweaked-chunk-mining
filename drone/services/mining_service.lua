@@ -65,6 +65,8 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
         if self.droneState.currentTask ~= EDroneTask.MINING then
             return
         end
+        InventoryService.dropSelectedItemsDown()
+
         local isCompleted = self:mineColumn(upperY, lowerY)
         if not isCompleted then
             return
@@ -128,9 +130,13 @@ function MiningService:mineColumn(upperY, lowerY)
             return false
         end
         local hasBlock, data = turtle.inspectDown()
-
         if hasBlock then
-            if turtle.digDown() then
+            if data.name == "minecraft:water" or data.name == "minecraft:lava" then
+                if not turtle.down() then
+                    print("Cannot descend into" .. data.name .. " on Y=" .. y)
+                    break
+                end
+            elseif turtle.digDown() then
                 if not turtle.down() then break end
             else
                 print("Unbreakable block on Y=" .. y)
@@ -143,6 +149,7 @@ function MiningService:mineColumn(upperY, lowerY)
             end
         end
     end
+
 
     self.droneState:updatePosition()
 
