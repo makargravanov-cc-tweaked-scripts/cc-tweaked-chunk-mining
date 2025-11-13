@@ -43,9 +43,9 @@ function DroneNet:init()
         ---@type Vec
         local pos = message.payload.position
         self.droneState:setTargetPosition(pos)
-        self.droneState.baseY    = msg.payload.baseY
-        self.droneState.highYDig = msg.payload.highYDig
-        self.droneState.lowYDig  = msg.payload.lowYDig
+        self.droneState.baseY    = message.payload.baseY
+        self.droneState.highYDig = message.payload.highYDig
+        self.droneState.lowYDig  = message.payload.lowYDig
         self.droneState.currentTask = EDroneTask.TEST_MOVE
     end)
     router:registerRoute("/drone/start/mining", function(message)
@@ -58,9 +58,9 @@ function DroneNet:init()
         self.droneState:setTargetPosition(pos)
         self.droneState.startNumber = rangeFrom
         self.droneState.targetNumber = rangeTo
-        self.droneState.baseY    = msg.payload.baseY
-        self.droneState.highYDig = msg.payload.highYDig
-        self.droneState.lowYDig  = msg.payload.lowYDig
+        self.droneState.baseY    = message.payload.baseY
+        self.droneState.highYDig = message.payload.highYDig
+        self.droneState.lowYDig  = message.payload.lowYDig
         self.droneState.currentTask = EDroneTask.MINING
     end)
     router:registerRoute("/drone/stop/mining", function(message)
