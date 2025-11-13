@@ -229,6 +229,7 @@ function MoveService:moveTo(target)
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
     while self.currentMoveState == EMoveState.WAIT do
+        print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
@@ -236,6 +237,7 @@ function MoveService:moveTo(target)
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
+        print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
     self:moveHorizontal(target.x, target.z)
@@ -243,6 +245,7 @@ function MoveService:moveTo(target)
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
+        print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
     self:moveVertical(target.y)
