@@ -100,6 +100,7 @@ end
 ---@param msg Message
 function DroneService:processFuelLoad(msg)
     local fuelPosition = self.hubState:subscribeDroneToFuelPod(msg.callbackId)
+    print("fuelPosition", fuelPosition, " for drone ", msg.callbackId)
     if fuelPosition then
         local copy = Vec.copy(fuelPosition)
         copy.y = copy.y + 1
