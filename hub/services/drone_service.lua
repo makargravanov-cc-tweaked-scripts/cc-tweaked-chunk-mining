@@ -204,6 +204,7 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processStartUp(message)
+    print("processStartUp")
     local result = self.hubState:tryStartMoveUp(message.callbackId)
     local state
     if result then
@@ -225,6 +226,7 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishUp(message)
+    print("processFinishUp")
     local result = self.hubState:finishMoveUp(message.callbackId)
     if result then
         for i, status in pairs(result) do
@@ -244,6 +246,7 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishHorizontal(message)
+    print("processFinishHorizontal")
     local result = self.hubState:finishMoveHorizontal(message.callbackId)
     if result then
         for i, status in pairs(result) do
@@ -263,6 +266,7 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishDown(message)
+    print("processFinishDown")
     local result = self.hubState:finishMoveDown(message.callbackId)
     if result then
         for i, status in pairs(result) do
