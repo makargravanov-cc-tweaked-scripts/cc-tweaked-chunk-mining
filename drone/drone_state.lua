@@ -70,13 +70,13 @@ end
 
 -- @param self DroneState
 -- @param waitingForUnloading boolean
-function DroneState:waitingForUnloading(waitingForUnloading)
+function DroneState:setWaitingForUnloading(waitingForUnloading)
     self.waitingForUnloading = waitingForUnloading
 end
 
 -- @param self DroneState
 -- @param waitingForRefueling boolean
-function DroneState:waitingForRefueling(waitingForRefueling)
+function DroneState:setWaitingForRefueling(waitingForRefueling)
     self.waitingForRefueling = waitingForRefueling
 end
 
