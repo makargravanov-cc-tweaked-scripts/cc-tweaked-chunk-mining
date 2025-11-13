@@ -446,6 +446,7 @@ function Console:handleLatency()
     local line = read()
     if not line then return end
     local cmd = line:lower()
+    if cmd == "exit" then return end
     Console.parseXYZ(cmd)
     local x, y, z = Console.parseXYZ(cmd)
     if x == nil then return end
@@ -463,6 +464,7 @@ function Console:handleHeights()
     local line = read()
     if not line then return end
     local cmd = line:lower()
+    if cmd == "exit" then return end
     Console.parseXYZ(cmd)
     local x, y, z = Console.parseXYZ(cmd)
     if x == nil or y == nil or z == nil then return end
