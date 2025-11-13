@@ -16,12 +16,12 @@ function FuelService.getFuelLevel()
     return turtle.getFuelLevel()
 end
 
---- @return boolean
 function FuelService.refuelFromBiomassBlockChest()
     local chest = peripheral.wrap("bottom")
-    if not chest or not chest.list then
-        error("Chest not found below turtle")
+    if not chest or not chest.list or not chest.pullItems then
+        error("Chest not found")
     end
+
 
     for slot, detail in pairs(chest.list()) do
         if detail.name == "createaddition:biomass_pellet_block" then
@@ -33,10 +33,10 @@ function FuelService.refuelFromBiomassBlockChest()
                 end
             end
             if not turtleFreeSlot then
-                error("No empty slot in turtle inventory for refueling")
+                error("No free slots")
             end
 
-            if chest.pullItems(peripheral.getName(turtle), slot, 1, turtleFreeSlot) > 0 then
+            if chest.pullItems("up", slot, 1, turtleFreeSlot) > 0 then
                 turtle.select(turtleFreeSlot)
                 if turtle.refuel(1) then
                     turtle.select(1)
