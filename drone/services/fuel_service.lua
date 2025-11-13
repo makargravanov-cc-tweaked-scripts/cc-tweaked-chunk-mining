@@ -35,14 +35,9 @@ function FuelService.refuelFromBiomassBlockChest()
             if not turtleFreeSlot then
                 error("No free slots")
             end
-
-            if chest.pullItems("up", slot, 1, turtleFreeSlot) > 0 then
-                turtle.select(turtleFreeSlot)
-                if turtle.refuel(1) then
-                    turtle.select(1)
-                    return true
-                end
-            end
+            turtle.select(turtleFreeSlot)
+            turtle.suckDown(1)
+            turtle.refuel(1)
         end
     end
     return false
