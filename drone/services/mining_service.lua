@@ -63,12 +63,14 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
             error("Failed to move to column X=" .. tostring(colGlobal.x) .. " Z=" .. tostring(colGlobal.z) .. " (index " .. tostring(idx) .. ")")
         end
         if self.droneState.currentTask ~= EDroneTask.MINING then
+            print("droneState.currentTask ~= EDroneTask.MINING")
             return
         end
         InventoryService.dropSelectedItemsDown()
 
         local isCompleted = self:mineColumn(upperY, lowerY)
         if not isCompleted then
+            print("droneState.currentTask ~= EDroneTask.MINING")
             return
         end
         self.droneState:updatePosition()
@@ -127,6 +129,7 @@ function MiningService:mineColumn(upperY, lowerY)
 
     for y = pos.y - 1, lowerY, -1 do
         if self.droneState.currentTask ~= EDroneTask.MINING then
+            print("droneState.currentTask ~= EDroneTask.MINING")
             return false
         end
         local hasBlock, data = turtle.inspectDown()
@@ -173,6 +176,7 @@ end
 function MiningService:mining()
     self.moveService:moveTo(self.droneState.targetPosition)
     self:startMining(self.droneState.startNumber, self.droneState.targetNumber, self.droneState.highYDig, self.droneState.lowYDig)
+    print("return")
     self.moveService:moveTo(self.droneState.initialPos)
 end
 
