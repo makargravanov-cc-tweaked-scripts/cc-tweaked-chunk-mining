@@ -513,7 +513,10 @@ function Console:handleTestMove()
                 "",
                 self.hubState.id,
                 {
-                    position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z)
+                    position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z),
+                    baseY    = self.hubState.baseY,
+                    highYDig = self.hubState.highYDig,
+                    lowYDig  = self.hubState.lowYDig
                 }
             ))
 
@@ -587,7 +590,10 @@ function Console:handleStartMining()
                 {
                     position = Vec.new(startPos.x, self.hubState.highYDig, startPos.z),
                     rangeFrom = range.from,
-                    rangeTo = range.to
+                    rangeTo = range.to,
+                    baseY    = self.hubState.baseY,
+                    highYDig = self.hubState.highYDig,
+                    lowYDig  = self.hubState.lowYDig
                 }
             ))
 
