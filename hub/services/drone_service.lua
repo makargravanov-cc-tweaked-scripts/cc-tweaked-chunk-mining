@@ -141,7 +141,6 @@ function DroneService:checkFuelQueue()
     end
 end
 
---- Call this method periodically to process queued unloading requests
 --- @param self DroneService
 function DroneService:runPodProcessor()
     parallel.waitForAll(
