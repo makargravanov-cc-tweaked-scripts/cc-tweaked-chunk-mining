@@ -262,6 +262,11 @@ function HubState:tryStartMoveUp(droneId)
         self.movingUp[droneId] = EMoveState.MOVE
         return true
     elseif self.currentDirection == ECurrentDirection.HORIZONTAL then
+        if #self.movingHorizontal == 0 then
+            self.currentDirection = ECurrentDirection.VERTICAL
+            self.movingUp[droneId] = EMoveState.MOVE
+            return true
+        end
         self.movingUp[droneId] = EMoveState.WAIT
         return false
     end
