@@ -6,7 +6,7 @@
 --- @field registerDrone fun(self: DroneService, droneId: integer)
 --- @field unregisterDrone fun(self: DroneService, droneId: integer)
 --- @field processInventoryUnload fun(self: DroneService, msg: Message)
---- @field processRefuel fun(self: DroneService, msg: Message)
+--- @field processFuelLoad fun(self: DroneService, msg: Message)
 --- @field processInventoryUnloadRelease fun(self: DroneService, msg: Message)
 --- @field processRefuelRelease fun(self: DroneService, msg: Message)
 --- @field runPodProcessor fun(self: DroneService)
