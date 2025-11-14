@@ -64,12 +64,12 @@ function Console:handleHelp()
     print("Available commands:")
     print("  help              - Show this help")
     print("  status            - Hub status and statistics")
-    print("  list-drones       - List registered drones")
-    print("  search-drones     - Discover new drones nearby")
-    print("  register-chunks   - Register 5x5 chunk grid")
-    print("  show-chunks       - Visualize chunk grid")
-    print("  assign-drones N   - Assign N drones per selected chunk")
-    print("  reset-assignments - Reset all assignments and chunk ranges")
+    print("  drones-list       - List registered drones")
+    print("  drones-search     - Discover new drones nearby")
+    print("  chunks-register   - Register 5x5 chunk grid")
+    print("  chunks-show       - Visualize chunk grid")
+    print("  drones-assign N   - Assign N drones per selected chunk")
+    print("  drones-reset-assignments - Reset all assignments and chunk ranges")
     print("  fuel              - Manage fuel pods")
     print("  cargo             - Manage cargo pods")
     print("  latency           - mining latency, num of parallel started")
@@ -79,6 +79,66 @@ function Console:handleHelp()
     print("  stop              - Stop mining")
     print("  send-reboot       - Send global reboot")
     print("  quit/exit         - Exit console")
+end
+
+--- Main console loop
+--- @param self Console
+function Console:run()
+    print("Hub console started. Type 'help' for available commands or 'quit' to exit.")
+    while true do
+        io.write("hub> ")
+        local line = read()
+        if not line then break end
+        local cmd = line:lower()
+
+        print(cmd)
+
+        if cmd == "help" or cmd == "h" then
+            self:handleHelp()
+        elseif cmd == "status" or cmd == "s\n" then
+            self:handleStatus()
+        elseif cmd == "drones-list" or cmd == "dl" then
+            self:handleListDrones()
+        elseif cmd == "drones-search" or cmd == "ds" then
+            self:handleSearchDrones()
+        elseif cmd == "chunks-register" or cmd == "cr" then
+            self:handleRegisterChunks()
+        elseif cmd == "chunks-show" or cmd == "cs" then
+            self:handleShowChunks()
+        elseif cmd == "fuel" or cmd == "pf" then
+            self:handleFuel()
+        elseif cmd == "cargo" or cmd == "pc" then
+            self:handleCargo()
+        elseif cmd == "latency-numbers" or cmd == "ln" then
+            self:handleLatency()
+        elseif cmd == "heights" or cmd == "ph" then
+            self:handleHeights()
+        elseif cmd == "test-move" or cmd == "mt" then
+            self:handleTestMove()
+        elseif cmd == "mining" or cmd == "mm" then
+            self:handleStartMining()
+        elseif cmd == "stop" or cmd == "ms" then
+            self:handleStopMining()
+        elseif cmd:find("^drones%-assign%s") or cmd:find("^da%s") then
+            local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
+            if not n then
+                n = tonumber(cmd:match("^da%s+(%d+)$"))
+            end
+            if not n or n < 1 then
+                print("Wrong format! Example: assign-drones 2 or da 2")
+            else
+                self:handleAssignDrones(n)
+            end
+        elseif cmd == "drones-reset-assignments" or cmd == "d ra" then
+            self:handleResetAssignments()
+        elseif cmd == "quit" or cmd == "exit" or cmd == "q" then
+            if self:handleQuit() then
+                break
+            end
+        elseif cmd ~= "" then
+            self:handleUnknownCommand(cmd)
+        end
+    end
 end
 
 --- Handles the "status" command
@@ -611,7 +671,6 @@ function Console:handleStartMining()
     end
 end
 
-
 --- @param self Console
 function Console:handleStopMining()
     for droneId in pairs(self.hubState.droneAssignment) do
@@ -623,66 +682,6 @@ function Console:handleStopMining()
         ))
     end
 end
---- Main console loop
---- @param self Console
-function Console:run()
-    print("Hub console started. Type 'help' for available commands or 'quit' to exit.")
-    while true do
-        io.write("hub> ")
-        local line = read()
-        if not line then break end
-        local cmd = line:lower()
-
-        print(cmd)
-
-        if cmd == "help" or cmd == "h" then
-            self:handleHelp()
-        elseif cmd == "status" or cmd == "s" then
-            self:handleStatus()
-        elseif cmd == "drones-list" or cmd == "dl" then
-            self:handleListDrones()
-        elseif cmd == "drones-search" or cmd == "ds" then
-            self:handleSearchDrones()
-        elseif cmd == "chunks-register" or cmd == "cr" then
-            self:handleRegisterChunks()
-        elseif cmd == "chunks-show" or cmd == "cs" then
-            self:handleShowChunks()
-        elseif cmd == "fuel" or cmd == "pf" then
-            self:handleFuel()
-        elseif cmd == "cargo" or cmd == "pc" then
-            self:handleCargo()
-        elseif cmd == "latency-numbers" or cmd == "ln" then
-            self:handleLatency()
-        elseif cmd == "heights" or cmd == "ph" then
-            self:handleHeights()
-        elseif cmd == "test-move" or cmd == "mt" then
-            self:handleTestMove()
-        elseif cmd == "mining" or cmd == "mm" then
-            self:handleStartMining()
-        elseif cmd == "stop" or cmd == "ms" then
-            self:handleStopMining()
-        elseif cmd:find("^drones%-assign%s") or cmd:find("^da%s") then
-            local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
-            if not n then
-                n = tonumber(cmd:match("^da%s+(%d+)$"))
-            end
-            if not n or n < 1 then
-                print("Wrong format! Example: assign-drones 2 or da 2")
-            else
-                self:handleAssignDrones(n)
-            end
-        elseif cmd == "drones-reset-assignments" or cmd == "d ra" then
-            self:handleResetAssignments()
-        elseif cmd == "quit" or cmd == "exit" or cmd == "q" then
-            if self:handleQuit() then
-                break
-            end
-        elseif cmd ~= "" then
-            self:handleUnknownCommand(cmd)
-        end
-    end
-end
-
 
 --- @param input string
 --- @return integer|nil x
