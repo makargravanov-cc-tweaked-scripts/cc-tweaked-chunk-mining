@@ -104,21 +104,21 @@ local args = {...}
 local choice = args[1]
 local selfScriptPath = shell.getRunningProgram and shell.getRunningProgram() or "startup.lua"
 
-local function checkInstalledDrone()
+local function uninstallIfExists()
     if fs.exists("run_drone.lua") or fs.exists("run_hub.lua") then
         uninstallFiles(presets.all, selfScriptPath)
     end  
 end
 
 if not choice then
-    checkInstalledDrone()
-    if turtle then 
-        downloadFiles(presets["drone"])
-        shell.run("run_drone.lua")
+    if turtle then
+        choice = "drone"
     else
-        downloadFiles(presets["hub"])
-        shell.run("run_hub.lua")
+        choice = "hub"
     end
+    uninstallIfExists()
+    downloadFiles(presets[choice])
+    shell.run("run_" .. choice .. ".lua")
 elseif choice == "help" then
     print("Use: install <hub|drone|all|u>")
 elseif choice == "u" or choice == "uninstall" then
