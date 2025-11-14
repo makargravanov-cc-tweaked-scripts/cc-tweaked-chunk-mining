@@ -95,7 +95,7 @@ function Console:run()
 
         if cmd == "help" or cmd == "h" then
             self:handleHelp()
-        elseif cmd == "status" or cmd == "s\n" then
+        elseif cmd == "status" or cmd == "s" then
             self:handleStatus()
         elseif cmd == "drones-list" or cmd == "dl" then
             self:handleListDrones()
