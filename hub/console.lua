@@ -637,7 +637,7 @@ function Console:run()
 
         if cmd == "help" or cmd == "h" then
             self:handleHelp()
-        elseif cmd == "status" or cmd == "S" then
+        elseif cmd == "status" or cmd == "s" then
             self:handleStatus()
         elseif cmd == "drones-list" or cmd == "dl" then
             self:handleListDrones()
@@ -647,13 +647,13 @@ function Console:run()
             self:handleRegisterChunks()
         elseif cmd == "chunks-show" or cmd == "cs" then
             self:handleShowChunks()
-        elseif cmd == "fuel" or cmd == "F" then
+        elseif cmd == "fuel" or cmd == "pf" then
             self:handleFuel()
-        elseif cmd == "cargo" or cmd == "C" then
+        elseif cmd == "cargo" or cmd == "pc" then
             self:handleCargo()
         elseif cmd == "latency-numbers" or cmd == "ln" then
             self:handleLatency()
-        elseif cmd == "heights" or cmd == "H" then
+        elseif cmd == "heights" or cmd == "ph" then
             self:handleHeights()
         elseif cmd == "test-move" or cmd == "mt" then
             self:handleTestMove()
@@ -667,7 +667,7 @@ function Console:run()
                 n = tonumber(cmd:match("^da%s+(%d+)$"))
             end
             if not n or n < 1 then
-                print("Wrong format! Example: assign-drones 2 or d a 2")
+                print("Wrong format! Example: assign-drones 2 or da 2")
             else
                 self:handleAssignDrones(n)
             end
