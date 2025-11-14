@@ -637,32 +637,32 @@ function Console:run()
             self:handleHelp()
         elseif cmd == "status" or cmd == "S" then
             self:handleStatus()
-        elseif cmd == "drones-list" or cmd == "d l" then
+        elseif cmd == "drones-list" or cmd == "dl" then
             self:handleListDrones()
-        elseif cmd == "drones-search" or cmd == "d s" then
+        elseif cmd == "drones-search" or cmd == "ds" then
             self:handleSearchDrones()
-        elseif cmd == "chunks-register" or cmd == "c r" then
+        elseif cmd == "chunks-register" or cmd == "cr" then
             self:handleRegisterChunks()
-        elseif cmd == "chunks-show" or cmd == "c s" then
+        elseif cmd == "chunks-show" or cmd == "cs" then
             self:handleShowChunks()
         elseif cmd == "fuel" or cmd == "F" then
             self:handleFuel()
         elseif cmd == "cargo" or cmd == "C" then
             self:handleCargo()
-        elseif cmd == "latency-numbers" or cmd == "l n" then
+        elseif cmd == "latency-numbers" or cmd == "ln" then
             self:handleLatency()
         elseif cmd == "heights" or cmd == "H" then
             self:handleHeights()
-        elseif cmd == "test-move" or cmd == "t" then
+        elseif cmd == "test-move" or cmd == "mt" then
             self:handleTestMove()
-        elseif cmd == "mining" or cmd == "m" then
+        elseif cmd == "mining" or cmd == "mm" then
             self:handleStartMining()
-        elseif cmd == "stop" or cmd == "s" then
+        elseif cmd == "stop" or cmd == "ms" then
             self:handleStopMining()
-        elseif cmd:find("^drones%-assign%s") or cmd:find("^d a%s") then
+        elseif cmd:find("^drones%-assign%s") or cmd:find("^da%s") then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
             if not n then
-                n = tonumber(cmd:match("^d a%s+(%d+)$"))
+                n = tonumber(cmd:match("^da%s+(%d+)$"))
             end
             if not n or n < 1 then
                 print("Wrong format! Example: assign-drones 2 or d a 2")
