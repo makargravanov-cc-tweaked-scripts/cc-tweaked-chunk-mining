@@ -77,6 +77,7 @@ function Console:handleHelp()
     print("  test-move         - Test movement commands")
     print("  mining            - Start mining")
     print("  stop              - Stop mining")
+    print("  send-reboot       - Send global reboot")
     print("  quit/exit         - Exit console")
 end
 
@@ -632,42 +633,45 @@ function Console:run()
         if not line then break end
         local cmd = line:lower()
 
-        if cmd == "help" or cmd == "-h" then
+        if cmd == "help" or cmd == "h" then
             self:handleHelp()
-        elseif cmd == "status" then
+        elseif cmd == "status" or cmd == "S" then
             self:handleStatus()
-        elseif cmd == "list-drones" then
+        elseif cmd == "drones-list" or cmd == "d l" then
             self:handleListDrones()
-        elseif cmd == "search-drones" then
+        elseif cmd == "drones-search" or cmd == "d s" then
             self:handleSearchDrones()
-        elseif cmd == "register-chunks" or cmd == "-rc" then
+        elseif cmd == "chunks-register" or cmd == "c r" then
             self:handleRegisterChunks()
-        elseif cmd == "show-chunks" or cmd == "-sc" then
+        elseif cmd == "chunks-show" or cmd == "c s" then
             self:handleShowChunks()
-        elseif cmd == "fuel" then
+        elseif cmd == "fuel" or cmd == "F" then
             self:handleFuel()
-        elseif cmd == "cargo" then
+        elseif cmd == "cargo" or cmd == "C" then
             self:handleCargo()
-        elseif cmd == "latency-numbers" then
+        elseif cmd == "latency-numbers" or cmd == "l n" then
             self:handleLatency()
-        elseif cmd == "heights" then
+        elseif cmd == "heights" or cmd == "H" then
             self:handleHeights()
-        elseif cmd == "test-move" then
+        elseif cmd == "test-move" or cmd == "t" then
             self:handleTestMove()
-        elseif cmd == "mining" then
+        elseif cmd == "mining" or cmd == "m" then
             self:handleStartMining()
-        elseif cmd == "stop" then
+        elseif cmd == "stop" or cmd == "s" then
             self:handleStopMining()
-        elseif cmd:find("^assign%-drones%s") then
+        elseif cmd:find("^drones%-assign%s") or cmd:find("^d a%s") then
             local n = tonumber(cmd:match("^assign%-drones%s+(%d+)$"))
+            if not n then
+                n = tonumber(cmd:match("^d a%s+(%d+)$"))
+            end
             if not n or n < 1 then
-                print("Wrong format! Example: assign-drones 2")
+                print("Wrong format! Example: assign-drones 2 or d a 2")
             else
                 self:handleAssignDrones(n)
             end
-        elseif cmd:find("^reset%-assignments$") then
+        elseif cmd == "drones-reset-assignments" or cmd == "d ra" then
             self:handleResetAssignments()
-        elseif cmd == "quit" or cmd == "exit" then
+        elseif cmd == "quit" or cmd == "exit" or cmd == "q" then
             if self:handleQuit() then
                 break
             end
