@@ -81,7 +81,7 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
 
         local lastPosition = Vec.copy(self.droneState:getPosition())
 
-        if freeSlots <= 4 then
+        if freeSlots <= 15 then
             print("Need to unload inventory")
             InventoryService.requestUnloading(self.droneState, self.moveService.droneNet)
             while self.droneState.waitingForUnloading do
