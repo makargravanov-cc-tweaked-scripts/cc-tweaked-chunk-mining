@@ -6,6 +6,7 @@
 local base = "https://raw.githubusercontent.com/makargravanov-cc-tweaked-scripts/cc-tweaked-chunk-mining/refs/heads/master/"
 local presets = {
     common = {
+        "startup.lua",
         "lib/vec.lua",
         "lib/gps_util.lua",
         "lib/drone_tasks_enum.lua",
