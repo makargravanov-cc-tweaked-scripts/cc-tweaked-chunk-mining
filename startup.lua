@@ -103,7 +103,7 @@ end
 
 local args = {...}
 local choice = args[1]
-local selfScriptPath = shell.getRunningProgram and shell.getRunningProgram() or "install.lua"
+local selfScriptPath = shell.getRunningProgram and shell.getRunningProgram() or "startup.lua"
 
 local function checkInstalledDrone()
     if fs.exists("run_drone.lua") or fs.exists("run_hub.lua") then
