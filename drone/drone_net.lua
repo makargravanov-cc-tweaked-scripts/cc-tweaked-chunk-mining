@@ -49,6 +49,7 @@ function DroneNet:init()
         self.droneState.currentTask = EDroneTask.TEST_MOVE
     end)
     router:registerRoute("/drone/start/mining", function(message)
+        print("Received: /drone/start/mining")
         ---@type Vec
         local pos = message.payload.position
         ---@type integer
@@ -64,6 +65,7 @@ function DroneNet:init()
         self.droneState.currentTask = EDroneTask.MINING
     end)
     router:registerRoute("/drone/stop/mining", function(message)
+        print("Received: /drone/stop/mining")
         self.droneState.currentTask = EDroneTask.STOP
     end)
 -------------------------------------------------------------------------

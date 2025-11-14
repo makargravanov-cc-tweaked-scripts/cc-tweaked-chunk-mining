@@ -204,6 +204,7 @@ end
 function MoveService:startUpStatus(message)
     local state = message.payload.state
     local direction = message.payload.direction
+    print("startUpStatus: state: " .. state .. "dir: " .. direction)
     self.currentMoveState = state
     self.currentDirection = direction
     print("Move state: " .. state .. ", direction: " .. direction)
@@ -213,10 +214,12 @@ end
 --- @param message Message
 function MoveService:finishUpdate(message)
     if self.currentMoveState == EMoveState.FINISH_OUT then
+        print("finishUpdate: currentMoveState is FINISH_OUT")
         return
     end
     local state = message.payload.state
     local direction = message.payload.direction
+    print("finishUpdate: state: " .. state .. "dir: " .. direction)
     self.currentMoveState = state
     self.currentDirection = direction
 end
@@ -224,6 +227,7 @@ end
 --- @param self MoveService
 --- @param target Vec
 function MoveService:moveTo(target)
+    print("moveTo")
     self.currentMoveState = EMoveState.WAIT
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
@@ -261,34 +265,35 @@ end
 --- @param target Vec
 --- @param func function
 function MoveService:moveToWithFunction(target, func)
+    print("moveToWithFunction")
     self.currentMoveState = EMoveState.WAIT
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
-    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState == EMoveState.WAIT do
         sleep(1)
     end
-    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     func()
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
-    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
         sleep(1)
     end
-    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveHorizontal(target.x, target.z)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
-    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
         sleep(1)
     end
-    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
+    print("F3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(target.y)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
