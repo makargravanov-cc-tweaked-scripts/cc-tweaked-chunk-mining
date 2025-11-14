@@ -633,6 +633,8 @@ function Console:run()
         if not line then break end
         local cmd = line:lower()
 
+        print(cmd)
+
         if cmd == "help" or cmd == "h" then
             self:handleHelp()
         elseif cmd == "status" or cmd == "S" then
