@@ -388,8 +388,8 @@ end
 function Console:handleResetAssignments()
     print("Resetting all assignments and chunk ranges...")
     -- Unassign all drones first
-    for _, droneId in ipairs(self.hubState.drones) do
-        self.hubState:unassignDrone(droneId.id)
+    for _, droneEntity in ipairs(self.hubState.drones) do
+        self.hubState:unassignDrone(droneEntity.id)
     end
 
     -- For all chunks that have been registered: reset ranges
