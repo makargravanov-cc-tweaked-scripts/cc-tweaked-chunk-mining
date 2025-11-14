@@ -17,6 +17,8 @@
 --- @field processFinishUp fun(self: DroneService, msg: Message)
 --- @field processFinishHorizontal fun(self: DroneService, msg: Message)
 --- @field processFinishDown fun(self: DroneService, msg: Message)
+--- @
+--- @field globalReboot fun(self: DroneService)
 
 local HubState = require("hub.hub_state")
 local HubNetwork = require("hub.hub_net")
@@ -173,6 +175,16 @@ function DroneService:searchForDrones()
         distance = 32
     })
     print("search for drones...")
+    HubNetwork.sendNoTarget(discoveryMsg)
+    print("sended")
+end
+
+--- @param self DroneService
+function DroneService:globalReboot()
+    local discoveryMsg = msg.new("/drone/reboot",
+    "",
+    self.hubState.id, {})
+    print("rebooting drones...")
     HubNetwork.sendNoTarget(discoveryMsg)
     print("sended")
 end

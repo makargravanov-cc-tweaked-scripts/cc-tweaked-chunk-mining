@@ -86,6 +86,9 @@ function DroneNet:init()
     router:registerRoute("/drone/move/finish/update", function(message)
         self.moveService:finishUpdate(message)
     end)
+    router:registerRoute("/drone/reboot", function (message)
+        os.reboot()
+    end)
 
 end
 

@@ -33,6 +33,8 @@
 --- @
 --- @field handleStartMining fun(self: Console)
 --- @field handleStopMining fun(self: Console)
+--- @
+--- @field handleSendReboot fun(self: Console)
 
 local FuelPod = require("hub.entities.inventory.fuel_pod")
 local CargoPod = require("hub.entities.inventory.cargo_pod")
@@ -681,6 +683,11 @@ function Console:handleStopMining()
             {}
         ))
     end
+end
+
+--- @param self Console
+function Console:handleSendReboot()
+    self.droneService:globalReboot()
 end
 
 --- @param input string
