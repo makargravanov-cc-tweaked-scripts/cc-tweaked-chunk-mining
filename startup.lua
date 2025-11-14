@@ -31,6 +31,7 @@ local presets = {
         "hub/services/drone_service.lua",
     },
     drone = {
+        "run_hub.lua",
         "run_drone.lua",
         "drone/main.lua",
         "drone/drone.lua",
