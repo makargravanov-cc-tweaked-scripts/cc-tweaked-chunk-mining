@@ -107,6 +107,7 @@ function HubState:checkMoveVertical()
     -- check if all up moves are finished
     for id, elem in pairs(self.movingUp) do
         if elem == EMoveState.MOVE then
+            print("checkMoveVertical(up): state is MOVE, returning nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -117,6 +118,7 @@ function HubState:checkMoveVertical()
     -- check if all down moves are finished
     for id, elem in pairs(self.movingDown) do
         if elem == EMoveState.MOVE then
+            print("checkMoveVertical(down): state is MOVE, returning nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -126,6 +128,7 @@ function HubState:checkMoveVertical()
     end
 
     if (flag) then
+        print("checkMoveVertical: flag is true")
         return updatedIds
     end
 
@@ -197,6 +200,7 @@ function HubState:checkMoveHorizontal()
     -- like in checkMoveVertical but for horizontal
     for id, elem in pairs(self.movingHorizontal) do
         if elem == EMoveState.MOVE then
+            print("checkMoveHorizontal: state is MOVE, returning nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true

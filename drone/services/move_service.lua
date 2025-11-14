@@ -228,26 +228,29 @@ function MoveService:moveTo(target)
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState == EMoveState.WAIT do
-        print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
-        print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveHorizontal(target.x, target.z)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
-        print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(target.y)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
@@ -262,27 +265,30 @@ function MoveService:moveToWithFunction(target, func)
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState == EMoveState.WAIT do
-        print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     func()
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
-        print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveHorizontal(target.x, target.z)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
     "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
-        print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
         sleep(1)
     end
+    print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(target.y)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
