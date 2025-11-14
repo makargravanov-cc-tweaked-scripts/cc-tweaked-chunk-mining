@@ -1,10 +1,9 @@
 
-rednet.open("left")
-if rednet.isOpen("left") == false then
-    rednet.open("right")
-    if rednet.isOpen("right") == false then
-        print("Turn on modem please!")
-    end
+local modemName = peripheral.getName(peripheral.find("modem"))
+
+rednet.open(modemName)
+if rednet.isOpen() == false then
+    print("Turn on modem please!")
 end
 
 local Main = require("hub.main")
