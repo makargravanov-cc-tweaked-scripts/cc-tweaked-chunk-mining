@@ -64,23 +64,23 @@ end
 --- @param self Console
 function Console:handleHelp()
     print("Available commands:")
-    print("  help              - Show this help")
-    print("  status            - Hub status and statistics")
-    print("  drones-list       - List registered drones")
-    print("  drones-search     - Discover new drones nearby")
-    print("  chunks-register   - Register 5x5 chunk grid")
-    print("  chunks-show       - Visualize chunk grid")
-    print("  drones-assign N   - Assign N drones per selected chunk")
-    print("  drones-reset-assignments - Reset all assignments and chunk ranges")
-    print("  fuel              - Manage fuel pods")
-    print("  cargo             - Manage cargo pods")
-    print("  latency           - mining latency, num of parallel started")
-    print("  heights           - Set excavation heights (`x y z` syntax)")
-    print("  test-move         - Test movement commands")
-    print("  mining            - Start mining")
-    print("  stop              - Stop mining")
-    print("  send-reboot       - Send global reboot")
-    print("  quit/exit         - Exit console")
+    print("h   help              - Show this help")
+    print("s   status            - Hub status and statistics")
+    print("dl  drones-list       - List registered drones")
+    print("ds  drones-search     - Discover new drones nearby")
+    print("cr  chunks-register   - Register 5x5 chunk grid")
+    print("cs  chunks-show       - Visualize chunk grid")
+    print("da  drones-assign N   - Assign N drones per selected chunk")
+    print("dra drones-reset-assignments - Reset all assignments and chunk ranges")
+    print("pf  fuel              - Manage fuel pods")
+    print("pc  cargo             - Manage cargo pods")
+    print("ln  latency-numbers   - mining latency, num of parallel started")
+    print("ph  heights           - Set excavation heights (`x y z` syntax)")
+    print("mt  test-move         - Test movement commands")
+    print("mm  mining            - Start mining")
+    print("ms  stop              - Stop mining")
+    print("drb send-reboot       - Send global reboot")
+    print("q   quit/exit         - Exit console")
 end
 
 --- Main console loop
@@ -131,8 +131,10 @@ function Console:run()
             else
                 self:handleAssignDrones(n)
             end
-        elseif cmd == "drones-reset-assignments" or cmd == "d ra" then
+        elseif cmd == "drones-reset-assignments" or cmd == "dra" then
             self:handleResetAssignments()
+        elseif cmd == "drones-reboot" or cmd == "drb" then
+            self:handleSendReboot()
         elseif cmd == "quit" or cmd == "exit" or cmd == "q" then
             if self:handleQuit() then
                 break
