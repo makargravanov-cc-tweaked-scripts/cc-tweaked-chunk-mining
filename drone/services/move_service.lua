@@ -204,7 +204,7 @@ end
 function MoveService:startUpStatus(message)
     local state = message.payload.state
     local direction = message.payload.direction
-    print("startUpStatus: state: " .. state .. "dir: " .. direction)
+    print("startUpStatus: state: " .. state .. ", dir: " .. direction)
     self.currentMoveState = state
     self.currentDirection = direction
     print("Move state: " .. state .. ", direction: " .. direction)
@@ -219,7 +219,7 @@ function MoveService:finishUpdate(message)
     end
     local state = message.payload.state
     local direction = message.payload.direction
-    print("finishUpdate: state: " .. state .. "dir: " .. direction)
+    print("finishUpdate: state: " .. state .. ", dir: " .. direction)
     self.currentMoveState = state
     self.currentDirection = direction
 end
