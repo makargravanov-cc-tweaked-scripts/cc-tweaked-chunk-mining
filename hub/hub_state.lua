@@ -107,7 +107,7 @@ function HubState:checkMoveVertical()
     -- check if all up moves are finished
     for id, elem in pairs(self.movingUp) do
         if elem == EMoveState.MOVE then
-            print(id .. "checkMoveVertical(up): state is MOVE, returning nil")
+            print(id .. "checkMoveVertical(up): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -118,7 +118,7 @@ function HubState:checkMoveVertical()
     -- check if all down moves are finished
     for id, elem in pairs(self.movingDown) do
         if elem == EMoveState.MOVE then
-            print(id .. "checkMoveVertical(down): state is MOVE, returning nil")
+            print(id .. "checkMoveVertical(down): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -163,11 +163,11 @@ function HubState:finishMoveUp(droneId)
             self.movingUp[droneId] = EMoveState.FINISH
             return self:checkMoveVertical()
         else
-            print(droneId .. "WARNING: finishMoveUp: " .. droneId .. " not found!")
+            print(droneId .. "WARN: finishMoveUp: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. "WARNING: finishMoveUp: currentDirection is not vertical!")
+        print(droneId .. "WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -181,11 +181,11 @@ function HubState:finishMoveDown(droneId)
             self.movingDown[droneId] = EMoveState.FINISH
             return self:checkMoveVertical()
         else
-            print(droneId .. "WARNING: finishMoveDown: " .. droneId .. " not found!")
+            print(droneId .. "WARN: finishMoveDown: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. "WARNING: finishMoveUp: currentDirection is not vertical!")
+        print(droneId .. "WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -200,7 +200,7 @@ function HubState:checkMoveHorizontal()
     -- like in checkMoveVertical but for horizontal
     for id, elem in pairs(self.movingHorizontal) do
         if elem == EMoveState.MOVE then
-            print(id .. "checkMoveHorizontal: state is MOVE, returning nil")
+            print(id .. "checkMoveHorizontal: state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -259,11 +259,11 @@ function HubState:finishMoveHorizontal(droneId)
             self.movingHorizontal[droneId] = EMoveState.FINISH
             return self:checkMoveHorizontal()
         else
-            print(droneId .. "WARNING: finishMoveHorizontal: " .. droneId .. " not found!")
+            print(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. "WARNING: finishMoveHorizontal: currentDirection is not horizontal!")
+        print(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
         return nil
     end
 end
