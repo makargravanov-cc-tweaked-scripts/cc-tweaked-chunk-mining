@@ -253,8 +253,7 @@ function DroneService:processFinishUp(message)
     log(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
-           print(message.callbackId .. " P_finishUp status: " .. status .. " id: " .. i)
-           logFile.writeLine(message.callbackId .. " P_finishUp status: " .. status .. " id: " .. i)
+           log(message.callbackId .. " P_finishUp status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
