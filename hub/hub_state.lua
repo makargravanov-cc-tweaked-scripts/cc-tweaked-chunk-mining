@@ -366,14 +366,14 @@ end
 --- @param self HubState
 --- @param pod FuelPod
 function HubState:addCargoPod(pod)
-    log(pod.position .. " addCargoPod")
+    log(pod.position.x .. "; " .. pod.position.y .. "; " .. pod.position.z .. " addCargoPod")
     table.insert(self.cargoPods, pod)
 end
 
 --- @param self HubState
 --- @param pod CargoPod
 function HubState:removeCargoPod(pod)
-    log(pod.position .. " removeCargoPod")
+    log(pod.position.x .. "; " .. pod.position.y .. "; " .. pod.position.z ..  " removeCargoPod")
     for i, p in pairs(self.cargoPods) do
         if p:equals(pod) then
             table.remove(self.cargoPods, i)
