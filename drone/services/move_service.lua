@@ -207,7 +207,6 @@ function MoveService:startUpStatus(message)
     print("startUpStatus: state: " .. state .. ", dir: " .. direction)
     self.currentMoveState = state
     self.currentDirection = direction
-    print("Move state: " .. state .. ", direction: " .. direction)
 end
 
 --- @param self MoveService
@@ -227,7 +226,6 @@ end
 --- @param self MoveService
 --- @param target Vec
 function MoveService:moveTo(target)
-    print("moveTo")
     self.currentMoveState = EMoveState.WAIT
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
