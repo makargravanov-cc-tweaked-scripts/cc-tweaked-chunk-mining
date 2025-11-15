@@ -234,12 +234,12 @@ function DroneService:processStartUp(message)
     local state
     if result then
         state = EMoveState.MOVE
-        print(message.callbackId .. "P_startUp MOVE")
-        logFile.writeLine(message.callbackId .. "P_startUp MOVE")
+        print(message.callbackId .. " P_startUp MOVE")
+        logFile.writeLine(message.callbackId .. " P_startUp MOVE")
     else
         state = EMoveState.WAIT
-        print(message.callbackId .. "P_startUp WAIT")
-        logFile.writeLine(message.callbackId .. "P_startUp MOVE")
+        print(message.callbackId .. " P_startUp WAIT")
+        logFile.writeLine(message.callbackId .. " P_startUp MOVE")
     end
     HubNetwork.send(message.callbackId, Message.new(
         "/drone/move/start/up/status",
@@ -305,15 +305,15 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishDown(message)
-    print(message.callbackId .. "P_FinishDw currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. "P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    print(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    logFile.writeLine(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveDown(message.callbackId)
-    print(message.callbackId .. "P_FinishDw currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. "P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    print(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    logFile.writeLine(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
-           print(message.callbackId .. "P_FinishDw status: " .. status .. " id: " .. i)
-           logFile.writeLine(message.callbackId .. "P_FinishDw status: " .. status .. " id: " .. i)
+           print(message.callbackId .. " P_FinishDw status: " .. status .. " id: " .. i)
+           logFile.writeLine(message.callbackId .. " P_FinishDw status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
