@@ -5,13 +5,13 @@ if rednet.isOpen() == false then
     log("Turn on modem please!")
 end
 
-local LogFile = fs.open("log_" .. getFileTimestamp(), "a")
+local LogFile = fs.open("log_" .. GetFileTimestamp(), "a")
 
 --- @param text string
 --- @return string
 function log(text)
     print(text)
-    LogFile.write("[" .. getTimestamp() .. "]: " .. text)
+    LogFile.write("[" .. GetTimestamp() .. "]: " .. text)
 end
 
 --- @return string
