@@ -186,8 +186,10 @@ function DroneService:globalReboot()
     "",
     self.hubState.id, {})
     print("rebooting drones...")
+    logFile.write("rebooting drones...")
     HubNetwork.sendNoTarget(discoveryMsg)
     print("sended")
+    logFile.write("sended")
 end
 
 --- comment
