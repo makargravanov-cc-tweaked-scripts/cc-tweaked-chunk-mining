@@ -148,7 +148,7 @@ function HubState:checkMoveVertical()
     end
     self.movingUp = {}
     self.movingDown = {}
-    log("checkMoveVertical SUCCESS: " .. counter1 .. " " .. counter2 .. " " .. counter3)
+    log("checkMoveVertical SUCCESS: updated " .. #updatedIds .. " drones")
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
