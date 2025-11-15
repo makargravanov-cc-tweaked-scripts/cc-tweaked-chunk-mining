@@ -25,11 +25,11 @@ end
 --- @param message Message
 function Router:dispatch(path, message)
     local handler = self.routes[path]
-    print("router dispatch: handler = " .. tostring(handler))
+    --print("router dispatch: handler = " .. tostring(handler))
     if handler then
         handler(message)
     else
-        print("router dispatch: No handler for path: " .. path)
+        --print("router dispatch: No handler for path: " .. path)
     end
 end
 
