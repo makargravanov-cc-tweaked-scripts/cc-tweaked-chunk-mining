@@ -69,7 +69,7 @@ function DroneService:processInventoryUnload(msg)
     else
         -- Add to queue for later processing
         self.hubState.cargoQueue:push(msg)
-        print("Drone " .. msg.callbackId .. " added to unloading queue")
+        log("Drone " .. msg.callbackId .. " added to unloading queue")
     end
 end
 
@@ -90,8 +90,7 @@ function DroneService:checkUnloadingQueue()
                     unloadingPosition = copy
                 })
                 HubNetwork.send(queuedMsg.callbackId, unloadMsg)
-                print("Processed queued unloading request for drone " .. queuedMsg.callbackId)
-                logFile.writeLine("Processed queued unloading request for drone " .. queuedMsg.callbackId)
+                log("Processed queued unloading request for drone " .. queuedMsg.callbackId)
             else
                 -- Still no available cargo pod, break and try again later
                 break
@@ -105,7 +104,7 @@ end
 ---@param msg Message
 function DroneService:processFuelLoad(msg)
     local fuelPosition = self.hubState:subscribeDroneToFuelPod(msg.callbackId)
-    print("fuelPosition", fuelPosition, " for drone ", msg.callbackId)
+    log("fuelPosition" .. fuelPosition .. " for drone " .. msg.callbackId)
     if fuelPosition then
         local copy = Vec.copy(fuelPosition)
         copy.y = copy.y + 1
@@ -118,7 +117,7 @@ function DroneService:processFuelLoad(msg)
     else
         -- Add to queue for later processing
         self.hubState.fuelQueue:push(msg)
-        print("Drone " .. msg.callbackId .. " added to unloading queue")
+        log("Drone " .. msg.callbackId .. " added to unloading queue")
     end
 end
 
@@ -139,7 +138,7 @@ function DroneService:checkFuelQueue()
                     fuelPosition = copy
                 })
                 HubNetwork.send(queuedMsg.callbackId, unloadMsg)
-                print("Processed queued fuel request for drone " .. queuedMsg.callbackId)
+                log("Processed queued fuel request for drone " .. queuedMsg.callbackId)
             else
                 -- Still no available fuel pod, break and try again later
                 break
@@ -175,9 +174,9 @@ function DroneService:searchForDrones()
         position = self.hubState.position,
         distance = 32
     })
-    print("search for drones...")
+    log("search for drones...")
     HubNetwork.sendNoTarget(discoveryMsg)
-    print("sended")
+    log("sended")
 end
 
 --- @param self DroneService
@@ -185,18 +184,16 @@ function DroneService:globalReboot()
     local discoveryMsg = msg.new("/drone/reboot",
     "",
     self.hubState.id, {})
-    print("rebooting drones...")
-    logFile.write("rebooting drones...")
+    log("rebooting drones...")
     HubNetwork.sendNoTarget(discoveryMsg)
-    print("sended")
-    logFile.write("sended")
+    log("sended")
 end
 
 --- comment
 --- @param self DroneService
 --- @param msg Message
 function DroneService:registerDrone(msg)
-    print("registerDrone()")
+    log(msg.callbackId .. " registerDrone")
     ---@type integer
     local droneId = msg.payload.droneId
     ---@type boolean
@@ -215,7 +212,7 @@ function DroneService:registerDrone(msg)
             droneId  = droneId
         })
         HubNetwork.send(droneId, responseMsg)
-        print("Registered drone with ID: "..droneId)
+        log("Registered drone with ID: "..droneId)
     end
 end
 
@@ -226,20 +223,16 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processStartUp(message)
-    print(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:tryStartMoveUp(message.callbackId)
-    print(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_startUp currentDirection: " .. self.hubState.currentDirection)
     local state
     if result then
         state = EMoveState.MOVE
-        print(message.callbackId .. " P_startUp MOVE")
-        logFile.writeLine(message.callbackId .. " P_startUp MOVE")
+        log(message.callbackId .. " P_startUp MOVE")
     else
         state = EMoveState.WAIT
-        print(message.callbackId .. " P_startUp WAIT")
-        logFile.writeLine(message.callbackId .. " P_startUp MOVE")
+        log(message.callbackId .. " P_startUp WAIT")
     end
     HubNetwork.send(message.callbackId, Message.new(
         "/drone/move/start/up/status",
@@ -255,11 +248,9 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishUp(message)
-    print(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveUp(message.callbackId)
-    print(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_finishUp currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
            print(message.callbackId .. " P_finishUp status: " .. status .. " id: " .. i)
@@ -280,15 +271,12 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishHorizontal(message)
-    print(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveHorizontal(message.callbackId)
-    print(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_FinishH currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
-           print(message.callbackId .. " P_FinishH status: " .. status .. " id: " .. i)
-           logFile.writeLine(message.callbackId .. " P_FinishH status: " .. status .. " id: " .. i)
+           log(message.callbackId .. " P_FinishH status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",
@@ -305,15 +293,12 @@ end
 --- @param self DroneService
 --- @param message Message
 function DroneService:processFinishDown(message)
-    print(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
     local result = self.hubState:finishMoveDown(message.callbackId)
-    print(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
-    logFile.writeLine(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
+    log(message.callbackId .. " P_FinishDw currentDirection: " .. self.hubState.currentDirection)
     if result then
         for i, status in pairs(result) do
-           print(message.callbackId .. " P_FinishDw status: " .. status .. " id: " .. i)
-           logFile.writeLine(message.callbackId .. " P_FinishDw status: " .. status .. " id: " .. i)
+           log(message.callbackId .. " P_FinishDw status: " .. status .. " id: " .. i)
            HubNetwork.send(i, Message.new(
                "/drone/move/finish/update",
                "",

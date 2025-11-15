@@ -49,8 +49,7 @@ function Hub:processQueue()
                     self.hubNet:dispatch(item.msg)
                 end)
                 if not ok then
-                    print("Error in dispatch:", tostring(err))
-                    logFile.writeLine("Error in dispatch: ", tostring(err))
+                    log("Error in dispatch: " .. tostring(err))
                 end
             end
         else

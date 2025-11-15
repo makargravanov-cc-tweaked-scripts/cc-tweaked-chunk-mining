@@ -107,8 +107,7 @@ function HubState:checkMoveVertical()
     -- check if all up moves are finished
     for id, elem in pairs(self.movingUp) do
         if elem == EMoveState.MOVE then
-            print(id .. " checkMoveVertical(up): state = MOVE, return nil")
-            logFile.writeLine(id .. " checkMoveVertical(up): state = MOVE, return nil")
+            log(id .. " checkMoveVertical(up): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -119,8 +118,7 @@ function HubState:checkMoveVertical()
     -- check if all down moves are finished
     for id, elem in pairs(self.movingDown) do
         if elem == EMoveState.MOVE then
-            print(id .. " checkMoveVertical(down): state = MOVE, return nil")
-            logFile.writeLine(id .. " checkMoveVertical(down): state = MOVE, return nil")
+            log(id .. " checkMoveVertical(down): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -130,8 +128,7 @@ function HubState:checkMoveVertical()
     end
 
     if (flag) then
-        print("checkMoveVertical: flag is true")
-        logFile.writeLine("checkMoveVertical: flag is true")
+        log("checkMoveVertical: flag is true")
         return updatedIds
     end
 
@@ -151,6 +148,7 @@ function HubState:checkMoveVertical()
     end
     self.movingUp = {}
     self.movingDown = {}
+    log("checkMoveVertical SUCCESS: " .. counter1 .. " " .. counter2 .. " " .. counter3)
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
@@ -161,18 +159,17 @@ end
 --- @param droneId integer
 --- @return table<integer, EMoveState>|nil
 function HubState:finishMoveUp(droneId)
+    log(droneId .. " finishMoveUp currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.VERTICAL then
         if self.movingUp[droneId] then
             self.movingUp[droneId] = EMoveState.FINISH
             return self:checkMoveVertical()
         else
-            print(droneId .. " WARN: finishMoveUp: " .. droneId .. " not found!")
-            logFile.writeLine(droneId .. " WARN: finishMoveUp: " .. droneId .. " not found!")
+            log(droneId .. " WARN: finishMoveUp: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
-        logFile.writeLine(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
+        log(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -181,18 +178,17 @@ end
 --- @param droneId integer
 --- @return table<integer, EMoveState>|nil
 function HubState:finishMoveDown(droneId)
+    log(droneId .. " finishMoveDown currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.VERTICAL then
         if self.movingDown[droneId] then
             self.movingDown[droneId] = EMoveState.FINISH
             return self:checkMoveVertical()
         else
-            print(droneId .. " WARN: finishMoveDown: " .. droneId .. " not found!")
-            logFile.writeLine(droneId .. " WARN: finishMoveDown: " .. droneId .. " not found!")
+            log(droneId .. " WARN: finishMoveDown: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
-        logFile.writeLine(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
+        log(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -207,8 +203,7 @@ function HubState:checkMoveHorizontal()
     -- like in checkMoveVertical but for horizontal
     for id, elem in pairs(self.movingHorizontal) do
         if elem == EMoveState.MOVE then
-            print(id .. " checkMoveHorizontal: state = MOVE, return nil")
-            logFile.writeLine(id .. " checkMoveHorizontal: state = MOVE, return nil")
+            log(id .. " checkMoveHorizontal: state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -218,8 +213,7 @@ function HubState:checkMoveHorizontal()
     end
 
     if (flag) then
-        print("checkMoveHorizontal: flag is true")
-        logFile.writeLine("checkMoveHorizontal: flag is true")
+        log("checkMoveHorizontal: flag is true")
         return updatedIds
     end
 
@@ -252,8 +246,7 @@ function HubState:checkMoveHorizontal()
         end
     end
     self.movingHorizontal = {}
-    print("checkMoveHorizontal: " .. counter1 .. " " .. counter2 .. " " .. counter3)        
-    logFile.writeLine("checkMoveHorizontal: " .. counter1 .. " " .. counter2 .. " " .. counter3)
+    log("checkMoveHorizontal SUCCESS: " .. counter1 .. " " .. counter2 .. " " .. counter3)        
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
@@ -264,18 +257,17 @@ end
 --- @param droneId integer
 --- @return table<integer, EMoveState>|nil
 function HubState:finishMoveHorizontal(droneId)
+    log(droneId .. " finishMoveHorizontal currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.HORIZONTAL then
         if self.movingHorizontal[droneId] then
             self.movingHorizontal[droneId] = EMoveState.FINISH
             return self:checkMoveHorizontal()
         else
-            print(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
-            logFile.writeLine(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
+            log(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
             return nil
         end
     else
-        print(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
-        logFile.writeLine(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
+        log(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
         return nil
     end
 end
@@ -284,6 +276,7 @@ end
 --- @param droneId integer
 --- @return boolean
 function HubState:tryStartMoveUp(droneId)
+    log(droneId .. " tryStartMoveUp currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.VERTICAL then
         self.movingUp[droneId] = EMoveState.MOVE
         return true
@@ -303,6 +296,7 @@ end
 --- @param droneId integer
 --- @return boolean
 function HubState:tryStartMoveDown(droneId)
+    log(droneId .. " tryStartMoveDown currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.VERTICAL then
         self.movingDown[droneId] = EMoveState.MOVE
         return true
@@ -317,6 +311,7 @@ end
 --- @param droneId integer
 --- @return boolean
 function HubState:tryStartMoveHorizontal(droneId)
+    log(droneId .. " tryStartMoveHorizontal currentDir: " .. self.currentDirection)
     if self.currentDirection == ECurrentDirection.HORIZONTAL then
         self.movingHorizontal[droneId] = EMoveState.MOVE
         return true
@@ -371,12 +366,14 @@ end
 --- @param self HubState
 --- @param pod FuelPod
 function HubState:addCargoPod(pod)
+    log(pod.position .. " addCargoPod")
     table.insert(self.cargoPods, pod)
 end
 
 --- @param self HubState
 --- @param pod CargoPod
 function HubState:removeCargoPod(pod)
+    log(pod.position .. " removeCargoPod")
     for i, p in pairs(self.cargoPods) do
         if p:equals(pod) then
             table.remove(self.cargoPods, i)
@@ -389,6 +386,7 @@ end
 --- @param droneId integer
 --- @return Vec|nil
 function HubState:subscribeDroneToCargoPod(droneId)
+    log(droneId .. " subscribeDroneFromCargo")
     for _, pod in pairs(self.cargoPods) do
         if pod.isOccupied == false then
             if(pod:subscribeDrone(droneId)) then
@@ -402,6 +400,7 @@ end
 --- @param self HubState
 --- @param droneId integer
 function HubState:unsubscribeDroneFromCargoPod(droneId)
+    log(droneId .. " unsubscribeDroneFromCargo")
     for _, pod in pairs(self.cargoPods) do
         pod:unsubscribeDrone(droneId)
     end
@@ -528,7 +527,7 @@ function HubState:registerChunksGrid(gridSize)
     gridSize = gridSize or 5
     local centerChunk = self:getCenterChunk()
     if not centerChunk then
-        print("Error: Hub position not set. Cannot register chunks.")
+        log("Error: Hub position not set. Cannot register chunks.")
         return
     end
 
@@ -557,8 +556,8 @@ function HubState:registerChunksGrid(gridSize)
         end
     end
 
-    print("Registered " .. registeredCount .. " new chunks in " .. gridSize .. "x" .. gridSize .. " grid.")
-    print("Center chunk: " .. self:getChunkId(centerChunk))
+    log("Registered " .. registeredCount .. " new chunks in " .. gridSize .. "x" .. gridSize .. " grid.")
+    log("Center chunk: " .. self:getChunkId(centerChunk))
 end
 
 return HubState
