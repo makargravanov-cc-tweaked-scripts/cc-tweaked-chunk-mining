@@ -1,4 +1,3 @@
-
 local modemName = peripheral.getName(peripheral.find("modem"))
 
 rednet.open(modemName)

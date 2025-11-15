@@ -1,3 +1,4 @@
+logFile = fs.open("log_" .. os.date("%Y_%m_%d_%H_%M_%S.txt", os.epoch("utc") / 1000))
 
 local Main = {}
 

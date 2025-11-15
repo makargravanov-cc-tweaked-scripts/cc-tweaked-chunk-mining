@@ -108,6 +108,7 @@ function HubState:checkMoveVertical()
     for id, elem in pairs(self.movingUp) do
         if elem == EMoveState.MOVE then
             print(id .. " checkMoveVertical(up): state = MOVE, return nil")
+            logFile.write(id .. " checkMoveVertical(up): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -119,6 +120,7 @@ function HubState:checkMoveVertical()
     for id, elem in pairs(self.movingDown) do
         if elem == EMoveState.MOVE then
             print(id .. " checkMoveVertical(down): state = MOVE, return nil")
+            logFile.write(id .. " checkMoveVertical(down): state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -129,6 +131,7 @@ function HubState:checkMoveVertical()
 
     if (flag) then
         print("checkMoveVertical: flag is true")
+        logFile.write("checkMoveVertical: flag is true")
         return updatedIds
     end
 
@@ -164,10 +167,12 @@ function HubState:finishMoveUp(droneId)
             return self:checkMoveVertical()
         else
             print(droneId .. " WARN: finishMoveUp: " .. droneId .. " not found!")
+            logFile.write(droneId .. " WARN: finishMoveUp: " .. droneId .. " not found!")
             return nil
         end
     else
         print(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
+        logFile.write(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -182,10 +187,12 @@ function HubState:finishMoveDown(droneId)
             return self:checkMoveVertical()
         else
             print(droneId .. " WARN: finishMoveDown: " .. droneId .. " not found!")
+            logFile.write(droneId .. " WARN: finishMoveDown: " .. droneId .. " not found!")
             return nil
         end
     else
         print(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
+        logFile.write(droneId .. " WARN: finishMoveUp: currentDirection not vertical!")
         return nil
     end
 end
@@ -201,6 +208,7 @@ function HubState:checkMoveHorizontal()
     for id, elem in pairs(self.movingHorizontal) do
         if elem == EMoveState.MOVE then
             print(id .. " checkMoveHorizontal: state = MOVE, return nil")
+            logFile.write(id .. " checkMoveHorizontal: state = MOVE, return nil")
             return nil
         elseif elem == EMoveState.WAIT then
             flag = true
@@ -211,6 +219,7 @@ function HubState:checkMoveHorizontal()
 
     if (flag) then
         print("checkMoveHorizontal: flag is true")
+        logFile.write("checkMoveHorizontal: flag is true")
         return updatedIds
     end
 
@@ -244,6 +253,7 @@ function HubState:checkMoveHorizontal()
     end
     self.movingHorizontal = {}
     print("checkMoveHorizontal: " .. counter1 .. " " .. counter2 .. " " .. counter3)        
+    logFile.write("checkMoveHorizontal: " .. counter1 .. " " .. counter2 .. " " .. counter3)
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
@@ -260,10 +270,12 @@ function HubState:finishMoveHorizontal(droneId)
             return self:checkMoveHorizontal()
         else
             print(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
+            logFile.write(droneId .. "WARN: finishMoveHorizontal: " .. droneId .. " not found!")
             return nil
         end
     else
         print(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
+        logFile.write(droneId .. "WARN: finishMoveHorizontal: currentDirection not horizontal!")
         return nil
     end
 end
