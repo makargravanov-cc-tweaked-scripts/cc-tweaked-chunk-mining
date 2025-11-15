@@ -18,7 +18,6 @@ local presets = {
     },
     hub = {
         "run_hub.lua",
-        "lib/logging.lua",
         "hub/hub.lua",
         "hub/main.lua",
         "hub/hub_state.lua",
