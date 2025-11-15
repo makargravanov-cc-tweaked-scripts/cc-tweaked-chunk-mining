@@ -50,7 +50,7 @@ function Hub:processQueue()
                 end)
                 if not ok then
                     print("Error in dispatch:", tostring(err))
-                    logFile.write("Error in dispatch: ", tostring(err))
+                    logFile.writeLine("Error in dispatch: ", tostring(err))
                 end
             end
         else
