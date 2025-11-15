@@ -21,7 +21,7 @@ end
 --- @return string
 function log(text)
     print(text)
-    logFile.write("[" .. getTimestamp() .. "]: " .. text)
+    logFile.writeLine("[" .. getTimestamp() .. "]: " .. text)
 end
 
 local Main = require("hub.main")
