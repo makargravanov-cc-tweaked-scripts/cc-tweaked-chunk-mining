@@ -106,7 +106,7 @@ function DroneNet:dispatch(senderID, msg)
         print("drone net dispatch: msg == nil")
         return
     end
-    print("drone net dispatch: router:dispatch(msg.path, msg)")
+    -- print("drone net dispatch: router:dispatch(msg.path, msg)")
     router:dispatch(msg.path, msg)
 end
 
