@@ -6,14 +6,14 @@ if rednet.isOpen() == false then
 end
 
 --- @return string
-function GetFileTimestamp()
+function getFileTimestamp()
     return os.date("%Y_%m_%d_%H_%M_%S.txt", os.epoch("local") / 1000)
 end
 
-local LogFile = fs.open("log_" .. GetFileTimestamp(), "a")
+local logFile = fs.open("log_" .. getFileTimestamp(), "a")
 
 --- @return string
-function GetTimestamp()
+function getTimestamp()
     return os.date("%Y-%m-%d %H:%M:%S", os.epoch("local") / 1000)
 end
 
@@ -21,7 +21,7 @@ end
 --- @return string
 function log(text)
     print(text)
-    LogFile.write("[" .. GetTimestamp() .. "]: " .. text)
+    logFile.write("[" .. getTimestamp() .. "]: " .. text)
 end
 
 local Main = require("hub.main")
