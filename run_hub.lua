@@ -10,7 +10,12 @@ function getFileTimestamp()
     return os.date("%Y_%m_%d_%H_%M_%S.txt", os.epoch("local") / 1000)
 end
 
-local logFile = fs.open("log_" .. getFileTimestamp(), "a")
+local logFile = nil 
+if fs.getFreeSpace() > 1000 then
+    fs.open("log_" .. getFileTimestamp(), "a")
+else
+    print("WARN: out of space. File logging stopped")
+end
 
 --- @return string
 function getTimestamp()
@@ -21,7 +26,14 @@ end
 --- @return string
 function log(text)
     print(text)
-    logFile.writeLine("[" .. getTimestamp() .. "]: " .. text)
+    if logFile then
+        logFile.writeLine("[" .. getTimestamp() .. "]: " .. text)
+    end
+
+    if logFile and fs.getFreeSpace() < 1000 then
+        print("WARN: out of space. File logging stopped")
+        logFile.writeLine("[" .. getTimestamp() .. "]: " .. "Out of space for logging. Logging stopped.")
+    end
 end
 
 local Main = require("hub.main")
