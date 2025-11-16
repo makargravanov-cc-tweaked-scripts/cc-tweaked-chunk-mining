@@ -56,7 +56,7 @@ end
 --- @param self CargoPod
 --- @param droneId integer
 function CargoPod:unsubscribeDrone(droneId)
-    log(droneId .. " unsubscribeDrone isOccupied = " .. self.isOccupied)
+    log(droneId .. " unsubscribeDrone isOccupied = " .. tostring(self.isOccupied))
     if self.currentDroneId == droneId then
         self.isOccupied = false
         self.currentDroneId = -1
