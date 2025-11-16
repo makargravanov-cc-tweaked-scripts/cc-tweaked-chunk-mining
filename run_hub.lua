@@ -11,9 +11,11 @@ function getFileTimestamp()
 end
 
 local logFile = nil 
+local isWriteAllowed = false
 
 if fs.getFreeSpace(".") > 1000 then
     logFile = fs.open("log_" .. getFileTimestamp(), "a")
+    isWriteAllowed = true
 else
     print("WARN: out of space. File logging stopped")
 end
@@ -27,14 +29,14 @@ end
 --- @return string
 function log(text)
     print(text)
-    if logFile then
+    if isWriteAllowed then
         logFile.writeLine("[" .. getTimestamp() .. "]: " .. text)
-    end
-
-    if logFile and fs.getFreeSpace(".") < 1000 then
-        print("WARN: out of space. File logging stopped")
-        logFile.writeLine("[" .. getTimestamp() .. "]: " .. "Out of space for logging. Logging stopped.")
-        logFile = nil
+        
+        if fs.getFreeSpace(".") < 1000 then
+                print("WARN: out of space. File logging stopped")
+            logFile.writeLine("[" .. getTimestamp() .. "]: " .. "Out of space for logging. Logging stopped.")
+            isWriteAllowed = false
+        end
     end
 end
 
