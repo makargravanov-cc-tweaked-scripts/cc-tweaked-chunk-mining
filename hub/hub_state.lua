@@ -148,7 +148,11 @@ function HubState:checkMoveVertical()
     end
     self.movingUp = {}
     self.movingDown = {}
-    log("checkMoveVertical SUCCESS: updated " .. #updatedIds .. " drones")
+    local updatedCount = 0
+    for _ in pairs(updatedIds) do
+        updatedCount = updatedCount + 1
+    end
+    log("checkMoveVertical SUCCESS: updated " .. updatedCount .. " drones")
     -- in the code that calls HubState:finishMove*() 
     -- we will understand what type of messages must be sent 
     -- by we known the direction
@@ -281,7 +285,7 @@ function HubState:tryStartMoveUp(droneId)
         self.movingUp[droneId] = EMoveState.MOVE
         return true
     elseif self.currentDirection == ECurrentDirection.HORIZONTAL then
-        if #self.movingHorizontal == 0 then
+        if next(self.movingHorizontal) == nil then
             self.currentDirection = ECurrentDirection.VERTICAL
             self.movingUp[droneId] = EMoveState.MOVE
             return true
@@ -301,7 +305,7 @@ function HubState:tryStartMoveDown(droneId)
         self.movingDown[droneId] = EMoveState.MOVE
         return true
     elseif self.currentDirection == ECurrentDirection.HORIZONTAL then
-        self.movingUp[droneId] = EMoveState.WAIT
+        self.movingDown[droneId] = EMoveState.WAIT
         return false
     end
     return false

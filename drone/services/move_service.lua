@@ -33,7 +33,7 @@ function MoveService.new(droneState)
     self.droneState = droneState
     self.droneNet = nil
     self.currentDirection = ECurrentDirection.VERTICAL
-    self.currentDirection = EMoveState.WAIT
+    self.currentMoveState = EMoveState.WAIT
     return self
 end
 

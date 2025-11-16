@@ -3,6 +3,9 @@
         "C:/Users/Alex/Sumneko-Extensons/lua-ls-cc-tweaked/library"
     ],
     "Lua.diagnostics.globals": [
-        "getMyPosition"
+        "getMyPosition",
+        "log",
+        "getTimestamp",
+        "getFileTimestamp"
     ]
 }
