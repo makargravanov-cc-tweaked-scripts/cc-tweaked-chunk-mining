@@ -120,7 +120,7 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
 
     local freeSlots = InventoryService.getFreeSlots()
 
-    if freeSlots <= 4 then
+    if freeSlots < 16 then
         print("Need to unload inventory")
         InventoryService.requestUnloading(self.droneState, self.moveService.droneNet)
         while self.droneState.waitingForUnloading do
