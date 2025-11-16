@@ -227,11 +227,11 @@ end
 --- @return boolean success
 function Console:assignDroneToChunk(chunkId)
     -- Find an unassigned drone from the registered drones
-    for _, droneId in ipairs(self.hubState.drones) do
+    for _, droneEntity in ipairs(self.hubState.drones) do
         local isAssigned = false
         -- Check if this drone is already assigned to any chunk
         for assignedDroneId, _ in pairs(self.hubState.droneAssignment) do
-            if assignedDroneId == droneId then
+            if assignedDroneId == droneEntity.id then
                 isAssigned = true
                 break
             end
@@ -242,7 +242,7 @@ function Console:assignDroneToChunk(chunkId)
             -- For now, assign the first range in the chunk (range index 1)
             local ranges = self.hubState.chunkWorkMap[chunkId]
             if ranges and ranges[1] then
-                self.hubState:assignDrone(droneId.id, chunkId, 1)
+                self.hubState:assignDrone(droneEntity.id, chunkId, 1)
                 return true
             end
         end
