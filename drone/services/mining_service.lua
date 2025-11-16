@@ -120,7 +120,7 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
 
     local freeSlots = InventoryService.getFreeSlots()
 
-    if freeSlots <= 4 then
+    if freeSlots < 16 then
         print("Need to unload inventory")
         InventoryService.requestUnloading(self.droneState, self.moveService.droneNet)
         while self.droneState.waitingForUnloading do
@@ -153,7 +153,7 @@ function MiningService:mineColumn(upperY, lowerY)
         end
         local hasBlock, data = turtle.inspectDown()
         if hasBlock then
-            if data.name == "minecraft:water" or data.name == "minecraft:lava" then
+            if data.name == "minecraft:water" or data.name == "minecraft:lava" or data.name == "minecraft:bubble_column" then
                 if not turtle.down() then
                     print("Cannot descend into" .. data.name .. " on Y=" .. y)
                     break
@@ -202,6 +202,10 @@ function MiningService:mining()
     self:startMining(self.droneState.startNumber, self.droneState.targetNumber, self.droneState.highYDig, self.droneState.lowYDig)
     print("return")
     self.droneState.currentTask = EDroneTask.STOP
+    self.droneState:updatePosition()
+    if not Vec.equals(self.droneState:getPosition(), self.droneState.initialPos) then
+        self.moveService:moveTo(self.droneState.initialPos)
+    end
     self.droneState.currentTask = EDroneTask.IDLE
 end
 

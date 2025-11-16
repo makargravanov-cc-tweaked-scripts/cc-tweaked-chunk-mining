@@ -104,7 +104,6 @@ end
 ---@param msg Message
 function DroneService:processFuelLoad(msg)
     local fuelPosition = self.hubState:subscribeDroneToFuelPod(msg.callbackId)
-    log("fuelPosition" .. fuelPosition .. " for drone " .. msg.callbackId)
     if fuelPosition then
         local copy = Vec.copy(fuelPosition)
         copy.y = copy.y + 1
@@ -117,7 +116,7 @@ function DroneService:processFuelLoad(msg)
     else
         -- Add to queue for later processing
         self.hubState.fuelQueue:push(msg)
-        log("Drone " .. msg.callbackId .. " added to unloading queue")
+        log("Drone " .. msg.callbackId .. " added to refueling queue")
     end
 end
 
