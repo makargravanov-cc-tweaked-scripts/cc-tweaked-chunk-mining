@@ -117,6 +117,25 @@ function MiningService:startMining(startNumber, targetNumber, fromY, toY)
             end)
         end
     end
+
+    local freeSlots = InventoryService.getFreeSlots()
+
+    if freeSlots <= 4 then
+        print("Need to unload inventory")
+        InventoryService.requestUnloading(self.droneState, self.moveService.droneNet)
+        while self.droneState.waitingForUnloading do
+            os.sleep(1)
+        end
+        local unloadingPosition = self.droneState.targetPosition
+        if not unloadingPosition then
+            error("Unloading position not set")
+        end
+        self.moveService:moveTo(unloadingPosition)
+        InventoryService.dropAllItemsDown()
+        self.moveService:moveToWithFunction(self.droneState.initialPos, function ()
+            InventoryService.processInventoryUnloadRelease(self.droneState, self.moveService.droneNet)
+        end)
+    end
 end
 
 --- @param self MiningService
@@ -183,7 +202,6 @@ function MiningService:mining()
     self:startMining(self.droneState.startNumber, self.droneState.targetNumber, self.droneState.highYDig, self.droneState.lowYDig)
     print("return")
     self.droneState.currentTask = EDroneTask.STOP
-    self.moveService:moveTo(self.droneState.initialPos)
     self.droneState.currentTask = EDroneTask.IDLE
 end
 
