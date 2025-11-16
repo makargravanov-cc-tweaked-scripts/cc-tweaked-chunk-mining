@@ -339,7 +339,7 @@ end
 --- Handles the "show-chunks" command
 --- @param self Console
 function Console:handleShowChunks()
-    self.monitor = peripheral.wrap("top");
+    self.monitor = peripheral.find("monitor");
     if self.monitor ~= nil then
         term.redirect(self.monitor)
          -- Display the chunk grid initially
