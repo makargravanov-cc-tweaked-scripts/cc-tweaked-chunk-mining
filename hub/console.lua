@@ -367,7 +367,7 @@ function Console:handleShowChunks()
         end
         term.redirect(term.native())
     else
-        print("No monitor on " .. peripheral.getName(self.monitor))
+        print("No monitor found")
     end
 end
 
