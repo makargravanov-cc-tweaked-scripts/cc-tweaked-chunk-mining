@@ -339,7 +339,7 @@ end
 --- Handles the "show-chunks" command
 --- @param self Console
 function Console:handleShowChunks()
-    self.monitor = peripheral.find("monitor");
+    self.monitor = peripheral.find("m");
     if self.monitor ~= nil then
         term.redirect(self.monitor)
          -- Display the chunk grid initially
@@ -350,7 +350,7 @@ function Console:handleShowChunks()
             local event, p1, p2, p3 = os.pullEvent()
             if event == "monitor_touch" then
                 local side, mouseX, mouseY = p1, p2, p3
-                if side == "top" then
+                if side == peripheral.getName(self.monitor) then
                     self:handleChunkClick(mouseX, mouseY)
                     self:displayChunkGrid()
                 end
@@ -367,7 +367,7 @@ function Console:handleShowChunks()
         end
         term.redirect(term.native())
     else
-        print("No monitor on top")
+        print("No monitor on " .. peripheral.getName(self.monitor))
     end
 end
 
