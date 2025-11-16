@@ -34,6 +34,7 @@ function log(text)
     if logFile and fs.getFreeSpace(".") < 1000 then
         print("WARN: out of space. File logging stopped")
         logFile.writeLine("[" .. getTimestamp() .. "]: " .. "Out of space for logging. Logging stopped.")
+        logFile = nil
     end
 end
 
