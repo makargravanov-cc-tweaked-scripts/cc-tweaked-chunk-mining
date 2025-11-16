@@ -13,7 +13,7 @@ end
 local logFile = nil 
 
 if fs.getFreeSpace(".") > 1000 then
-    fs.open("log_" .. getFileTimestamp(), "a")
+    logFile = fs.open("log_" .. getFileTimestamp(), "a")
 else
     print("WARN: out of space. File logging stopped")
 end
