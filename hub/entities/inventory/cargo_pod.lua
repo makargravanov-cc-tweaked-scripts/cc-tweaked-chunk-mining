@@ -40,21 +40,27 @@ end
 --- @param droneId integer
 --- @return boolean
 function CargoPod:subscribeDrone(droneId)
+    log(droneId .. " subscribeDrone")
     if self.isOccupied then
+        log(droneId .. " subscribeDrone: Fail to subscribe because isOccupied is true")
         return false
     else
+        log(droneId .. " subscribeDrone: change isOccupied to true")
         self.isOccupied = true
     end
     self.currentDroneId = droneId
+    log(droneId .. " subscribeDrone: succesfully subscribed to pod: " .. self.position.x .. "; " .. self.position.y .. "; " .. self.position.z)
     return true
 end
 
 --- @param self CargoPod
 --- @param droneId integer
 function CargoPod:unsubscribeDrone(droneId)
+    log(droneId .. " unsubscribeDrone isOccupied = " .. tostring(self.isOccupied))
     if self.currentDroneId == droneId then
         self.isOccupied = false
         self.currentDroneId = -1
+        log(droneId .. " subscribeDrone: succesfully unsubscribed")
     end
 end
 

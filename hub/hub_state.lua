@@ -331,6 +331,7 @@ end
 --- @param droneId integer
 --- @return Vec|nil
 function HubState:subscribeDroneToFuelPod(droneId)
+    log(droneId .. " subscribeDroneToFuelPod")
     for _, pod in pairs(self.fuelPods) do
         if pod.isOccupied == false then
             if(pod:subscribeDrone(droneId)) then
@@ -390,7 +391,7 @@ end
 --- @param droneId integer
 --- @return Vec|nil
 function HubState:subscribeDroneToCargoPod(droneId)
-    log(droneId .. " subscribeDroneFromCargo")
+    log(droneId .. " subscribeDroneToCargoPod")
     for _, pod in pairs(self.cargoPods) do
         if pod.isOccupied == false then
             if(pod:subscribeDrone(droneId)) then
@@ -404,7 +405,7 @@ end
 --- @param self HubState
 --- @param droneId integer
 function HubState:unsubscribeDroneFromCargoPod(droneId)
-    log(droneId .. " unsubscribeDroneFromCargo")
+    log(droneId .. " unsubscribeDroneFromCargoPod")
     for _, pod in pairs(self.cargoPods) do
         pod:unsubscribeDrone(droneId)
     end
