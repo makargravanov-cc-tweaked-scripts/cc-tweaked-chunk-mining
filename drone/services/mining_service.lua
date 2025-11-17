@@ -183,7 +183,14 @@ function MiningService:mineColumn(upperY, lowerY)
                 turtle.digUp()
                 if not turtle.up() then
                     if not turtle.back() then
-                        print("Error ascending to Y=" .. upperY)
+                        self.moveService:turnRight()
+                        self.moveService:turnRight()
+                        turtle.dig()
+                        if not turtle.forward() then
+                            error("Error ascending to Y=" .. upperY)
+                        end
+                        self.moveService:turnLeft()
+                        self.moveService:turnLeft()
                     end
                 end
             end
