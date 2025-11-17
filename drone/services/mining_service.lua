@@ -186,7 +186,6 @@ function MiningService:mineColumn(upperY, lowerY)
                         print("Error ascending to Y=" .. upperY)
                     end
                 end
-                break
             end
         end
     end
