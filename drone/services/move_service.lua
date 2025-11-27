@@ -17,14 +17,14 @@
 --- @field currentMoveState EMoveState
 --- @field moveTest fun(self: MoveService)
 
-local Vec = require("lib.vec")
-local GpsUtil = require("lib.gps_util")
-local Message  = require("lib.net.msg")
-local EMoveState = require("lib.move_status_enum").EMoveState
+local Vec               = require("lib.vec")
+local GpsUtil           = require("lib.gps_util")
+local Message           = require("lib.net.msg")
+local EMoveState        = require("lib.move_status_enum").EMoveState
 local ECurrentDirection = require("lib.move_status_enum").ECurrentDirection
 
-local MoveService = {}
-MoveService.__index = MoveService
+local MoveService       = {}
+MoveService.__index     = MoveService
 
 --- @param droneState DroneState
 --- @return MoveService
@@ -75,7 +75,7 @@ function MoveService:moveVertical(targetY)
 end
 
 --- @param self MoveService
---- @return boolean 
+--- @return boolean
 function MoveService:calibrateDirection()
     print("Direction calibrating...")
     local pos1 = GpsUtil.position()
@@ -101,10 +101,14 @@ function MoveService:calibrateDirection()
     local delta = Vec.sub(pos2, pos1)
     local newDirection
 
-    if     delta.z == -1 then newDirection = 0 -- (-Z)
-    elseif delta.x ==  1 then newDirection = 1 -- (+X)
-    elseif delta.z ==  1 then newDirection = 2 -- (+Z)
-    elseif delta.x == -1 then newDirection = 3 -- (-X)
+    if delta.z == -1 then
+        newDirection = 0                       -- (-Z)
+    elseif delta.x == 1 then
+        newDirection = 1                       -- (+X)
+    elseif delta.z == 1 then
+        newDirection = 2                       -- (+Z)
+    elseif delta.x == -1 then
+        newDirection = 3                       -- (-X)
     else
         print("Calibrating error. Invalid delta.")
         return false
@@ -229,7 +233,7 @@ function MoveService:moveTo(target)
     self.currentMoveState = EMoveState.WAIT
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/start/up", "", self.droneState.id, {}))
     print("1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState == EMoveState.WAIT do
         sleep(1)
@@ -238,25 +242,25 @@ function MoveService:moveTo(target)
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/up", "", self.droneState.id, {}))
     print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
-    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
+    while self.currentMoveState == EMoveState.FINISH and self.currentDirection == ECurrentDirection.VERTICAL do
         sleep(1)
     end
     print("2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveHorizontal(target.x, target.z)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id, {}))
     print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
-    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
+    while self.currentMoveState == EMoveState.FINISH and self.currentDirection == ECurrentDirection.HORIZONTAL do
         sleep(1)
     end
     print("3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(target.y)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/down", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/down", "", self.droneState.id, {}))
 end
 
 --- @param self MoveService
@@ -267,7 +271,7 @@ function MoveService:moveToWithFunction(target, func)
     self.currentMoveState = EMoveState.WAIT
     self.currentDirection = ECurrentDirection.VERTICAL
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/start/up", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/start/up", "", self.droneState.id, {}))
     print("F1) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     while self.currentMoveState == EMoveState.WAIT do
         sleep(1)
@@ -277,25 +281,25 @@ function MoveService:moveToWithFunction(target, func)
     self:moveVertical(self.droneState.baseY + self.droneState.delta)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/up", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/up", "", self.droneState.id, {}))
     print("F2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
-    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.VERTICAL do
+    while self.currentMoveState == EMoveState.FINISH and self.currentDirection == ECurrentDirection.VERTICAL do
         sleep(1)
     end
     print("F2) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveHorizontal(target.x, target.z)
     self.currentMoveState = EMoveState.FINISH
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/horizontal", "", self.droneState.id, {}))
     print("F3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
-    while self.currentMoveState==EMoveState.FINISH and self.currentDirection==ECurrentDirection.HORIZONTAL do
+    while self.currentMoveState == EMoveState.FINISH and self.currentDirection == ECurrentDirection.HORIZONTAL do
         sleep(1)
     end
     print("F3) Move state: " .. self.currentMoveState .. ", direction: " .. self.currentDirection)
     self:moveVertical(target.y)
     self.currentMoveState = EMoveState.FINISH_OUT
     self.droneNet:sendToHub(Message.new(
-    "/hub/requests/drone/move/finish/down", "", self.droneState.id,{}))
+        "/hub/requests/drone/move/finish/down", "", self.droneState.id, {}))
 end
 
 --- @param self MoveService
