@@ -1,7 +1,7 @@
 local FuelService = require("drone.services.fuel_service")
 
 if not FuelService.hasEnoughFuel(2880) then
-    log("FUEL LEVEL LESS THAN 2880. PLEASE REFUEL TURTLE !!!")
+    print("FUEL LEVEL LESS THAN 2880. PLEASE REFUEL TURTLE !!!")
     return
 end
 
