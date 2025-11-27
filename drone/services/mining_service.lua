@@ -184,9 +184,11 @@ function MiningService:mineColumn(upperY, lowerY)
                 if not turtle.up() then
                     if not turtle.back() then
                         print("Error ascending to Y=" .. upperY)
+                        break
                     end
                 end
-                break
+                self.droneState:updatePosition()
+                currentPos = self.droneState:getPosition()
             end
         end
     end
